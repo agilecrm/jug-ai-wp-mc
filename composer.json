@@ -1,0 +1,13 @@
+{
+    "name": "jug-ai/wordpress-plugin",
+    "description": "Jug.ai AI Chatbot WordPress Plugin",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4"
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true
+    }
+}

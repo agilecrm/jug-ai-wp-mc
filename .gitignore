@@ -1,0 +1,8 @@
+admin/node_modules/
+admin/build/
+admin/package-lock.json
+*.log
+.DS_Store
+node_modules/
+jug-ai.zip
+jug-ai-wp.zip

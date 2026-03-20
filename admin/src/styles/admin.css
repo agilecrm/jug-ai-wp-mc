@@ -1,0 +1,963 @@
+/* ── Variables ── */
+#jug-ai-admin-root {
+  --jug-primary: #4f46e5;
+  --jug-primary-hover: #4338ca;
+  --jug-secondary: #06b6d4;
+  --jug-danger: #ef4444;
+  --jug-danger-hover: #dc2626;
+  --jug-success: #22c55e;
+  --jug-bg: #f8fafc;
+  --jug-card-bg: #ffffff;
+  --jug-border: #e2e8f0;
+  --jug-text: #1e293b;
+  --jug-text-muted: #64748b;
+  --jug-radius: 8px;
+  --jug-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  color: var(--jug-text);
+  line-height: 1.5;
+}
+
+/* ── Layout ── */
+.jug-ai-app {
+  display: flex;
+  min-height: calc(100vh - 32px);
+  background: var(--jug-bg);
+  margin-left: -20px;
+  margin-top: -10px;
+}
+
+.jug-ai-sidebar {
+  width: 220px;
+  background: var(--jug-card-bg);
+  border-right: 1px solid var(--jug-border);
+  padding: 20px 0;
+  flex-shrink: 0;
+}
+
+.jug-ai-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--jug-primary);
+  border-bottom: 1px solid var(--jug-border);
+}
+
+.jug-ai-sidebar-brand svg {
+  color: var(--jug-primary);
+}
+
+.jug-ai-sidebar-nav {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.jug-ai-sidebar-nav li a {
+  display: block;
+  padding: 10px 20px;
+  color: var(--jug-text);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.jug-ai-sidebar-nav li a:hover {
+  background: var(--jug-bg);
+}
+
+.jug-ai-sidebar-nav li.active a {
+  color: var(--jug-primary);
+  font-weight: 600;
+  background: #eef2ff;
+  border-right: 3px solid var(--jug-primary);
+}
+
+.jug-ai-main {
+  flex: 1;
+  padding: 24px 32px;
+  max-width: 1200px;
+}
+
+.jug-ai-main.with-sidebar {
+  margin-left: 0;
+}
+
+/* ── Page Header ── */
+.jug-ai-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.jug-ai-page-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* ── Cards ── */
+.jug-ai-card {
+  background: var(--jug-card-bg);
+  border: 1px solid var(--jug-border);
+  border-radius: var(--jug-radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--jug-shadow);
+}
+
+.jug-ai-card h3,
+.jug-ai-card h4 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* ── Buttons ── */
+.jug-ai-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--jug-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--jug-radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+}
+
+.jug-ai-btn-primary:hover {
+  background: var(--jug-primary-hover);
+  color: #fff;
+}
+
+.jug-ai-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.jug-ai-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--jug-card-bg);
+  color: var(--jug-text);
+  border: 1px solid var(--jug-border);
+  border-radius: var(--jug-radius);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.jug-ai-btn-secondary:hover {
+  background: var(--jug-bg);
+}
+
+.jug-ai-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  background: var(--jug-danger);
+  color: #fff;
+  border: none;
+  border-radius: var(--jug-radius);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.jug-ai-btn-danger:hover {
+  background: var(--jug-danger-hover);
+}
+
+.jug-ai-btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--jug-card-bg);
+  color: var(--jug-text);
+  border: 1px solid var(--jug-border);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.jug-ai-btn-sm:hover {
+  background: var(--jug-bg);
+}
+
+.jug-ai-btn-danger-sm {
+  color: var(--jug-danger);
+  border-color: var(--jug-danger);
+}
+
+.jug-ai-btn-danger-sm:hover {
+  background: #fef2f2;
+}
+
+.jug-ai-btn-link {
+  background: none;
+  border: none;
+  color: var(--jug-primary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+}
+
+.jug-ai-btn-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Form Fields ── */
+.jug-ai-field {
+  margin-bottom: 16px;
+}
+
+.jug-ai-field label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: var(--jug-text);
+}
+
+.jug-ai-field input[type="text"],
+.jug-ai-field input[type="url"],
+.jug-ai-field input[type="email"],
+.jug-ai-field input[type="date"],
+.jug-ai-field select,
+.jug-ai-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--jug-border);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--jug-text);
+  background: var(--jug-card-bg);
+  box-sizing: border-box;
+}
+
+.jug-ai-field input:focus,
+.jug-ai-field select:focus,
+.jug-ai-select:focus {
+  outline: none;
+  border-color: var(--jug-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.jug-ai-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--jug-border);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: monospace;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.jug-ai-textarea:focus {
+  outline: none;
+  border-color: var(--jug-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.jug-ai-radio-group {
+  display: flex;
+  gap: 20px;
+}
+
+.jug-ai-radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+/* ── Switch / Toggle ── */
+.jug-ai-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.jug-ai-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.jug-ai-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #cbd5e1;
+  border-radius: 24px;
+  transition: 0.2s;
+}
+
+.jug-ai-switch-slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.jug-ai-switch input:checked + .jug-ai-switch-slider {
+  background: var(--jug-primary);
+}
+
+.jug-ai-switch input:checked + .jug-ai-switch-slider::before {
+  transform: translateX(20px);
+}
+
+.jug-ai-switch-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.jug-ai-widget-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Login ── */
+.jug-ai-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.jug-ai-login-card {
+  background: var(--jug-card-bg);
+  border: 1px solid var(--jug-border);
+  border-radius: 12px;
+  padding: 40px;
+  width: 400px;
+  max-width: 100%;
+  box-shadow: var(--jug-shadow);
+}
+
+.jug-ai-login-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.jug-ai-login-header h1 {
+  font-size: 28px;
+  color: var(--jug-primary);
+  margin: 0 0 4px;
+}
+
+.jug-ai-login-header p {
+  color: var(--jug-text-muted);
+  margin: 0;
+}
+
+/* ── Tabs ── */
+.jug-ai-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--jug-border);
+}
+
+.jug-ai-tabs button {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--jug-text-muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.jug-ai-tabs button.active {
+  color: var(--jug-primary);
+  border-bottom-color: var(--jug-primary);
+}
+
+.jug-ai-tabs button:hover {
+  color: var(--jug-text);
+}
+
+/* ── OTP Input ── */
+.jug-ai-otp-input {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.jug-ai-otp-digit {
+  width: 52px;
+  height: 56px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  border: 2px solid var(--jug-border);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.jug-ai-otp-digit:focus {
+  border-color: var(--jug-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.jug-ai-otp-step {
+  text-align: center;
+}
+
+.jug-ai-otp-step p {
+  margin-bottom: 16px;
+}
+
+/* ── Wizard / Onboarding ── */
+.jug-ai-onboarding {
+  max-width: 720px;
+}
+
+.jug-ai-wizard-progress {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.jug-ai-wizard-step {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0 8px;
+  border-bottom: 3px solid var(--jug-border);
+  transition: border-color 0.2s;
+}
+
+.jug-ai-wizard-step.active {
+  border-color: var(--jug-primary);
+}
+
+.jug-ai-wizard-step.completed {
+  border-color: var(--jug-success);
+}
+
+.jug-ai-wizard-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--jug-border);
+  color: var(--jug-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.jug-ai-wizard-step.active .jug-ai-wizard-number {
+  background: var(--jug-primary);
+  color: #fff;
+}
+
+.jug-ai-wizard-step.completed .jug-ai-wizard-number {
+  background: var(--jug-success);
+  color: #fff;
+}
+
+.jug-ai-wizard-label {
+  display: block;
+  font-size: 12px;
+  color: var(--jug-text-muted);
+}
+
+.jug-ai-wizard-step.active .jug-ai-wizard-label {
+  color: var(--jug-text);
+  font-weight: 500;
+}
+
+.jug-ai-step h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.jug-ai-step-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* ── Progress Bar ── */
+.jug-ai-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.jug-ai-progress-bar {
+  flex: 1;
+  height: 10px;
+  background: var(--jug-border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.jug-ai-progress-fill {
+  height: 100%;
+  background: var(--jug-primary);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.jug-ai-progress-text {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 36px;
+}
+
+.jug-ai-status {
+  color: var(--jug-text-muted);
+  font-size: 13px;
+}
+
+/* ── Bot Grid ── */
+.jug-ai-bot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.jug-ai-bot-card {
+  background: var(--jug-card-bg);
+  border: 1px solid var(--jug-border);
+  border-radius: var(--jug-radius);
+  padding: 20px;
+  box-shadow: var(--jug-shadow);
+  transition: box-shadow 0.15s;
+}
+
+.jug-ai-bot-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.jug-ai-bot-card.active {
+  border-color: var(--jug-primary);
+  border-width: 2px;
+}
+
+.jug-ai-bot-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.jug-ai-bot-card-header h4 {
+  margin: 0;
+  flex: 1;
+  font-size: 16px;
+}
+
+.jug-ai-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.jug-ai-badge-active {
+  background: #eef2ff;
+  color: var(--jug-primary);
+}
+
+.jug-ai-badge-ready {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.jug-ai-badge-training {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.jug-ai-bot-url {
+  color: var(--jug-text-muted);
+  font-size: 12px;
+  margin: 0 0 8px;
+}
+
+.jug-ai-bot-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--jug-text-muted);
+  margin-bottom: 12px;
+}
+
+.jug-ai-bot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ── Stats Overview ── */
+.jug-ai-stats-overview {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.jug-ai-stat-card {
+  flex: 1;
+  background: var(--jug-card-bg);
+  border: 1px solid var(--jug-border);
+  border-radius: var(--jug-radius);
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--jug-shadow);
+}
+
+.jug-ai-stat-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--jug-primary);
+}
+
+.jug-ai-stat-label {
+  display: block;
+  font-size: 12px;
+  color: var(--jug-text-muted);
+  margin-top: 4px;
+}
+
+/* ── Table ── */
+.jug-ai-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--jug-card-bg);
+  border: 1px solid var(--jug-border);
+  border-radius: var(--jug-radius);
+  overflow: hidden;
+}
+
+.jug-ai-table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--jug-text-muted);
+  background: var(--jug-bg);
+  border-bottom: 1px solid var(--jug-border);
+}
+
+.jug-ai-table td {
+  padding: 10px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--jug-border);
+}
+
+.jug-ai-clickable {
+  cursor: pointer;
+}
+
+.jug-ai-clickable:hover {
+  background: var(--jug-bg);
+}
+
+.jug-ai-truncate {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Filters ── */
+.jug-ai-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.jug-ai-filters input {
+  padding: 6px 10px;
+  border: 1px solid var(--jug-border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.jug-ai-filters input:focus {
+  outline: none;
+  border-color: var(--jug-primary);
+}
+
+/* ── Pagination ── */
+.jug-ai-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+/* ── Messages ── */
+.jug-ai-thread-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.jug-ai-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.jug-ai-message {
+  padding: 12px 16px;
+  border-radius: var(--jug-radius);
+  max-width: 80%;
+}
+
+.jug-ai-message-user {
+  background: #eef2ff;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+
+.jug-ai-message-assistant {
+  background: var(--jug-bg);
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+
+.jug-ai-message-role {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--jug-text-muted);
+  margin-bottom: 4px;
+}
+
+.jug-ai-message-content {
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.jug-ai-message-time {
+  font-size: 11px;
+  color: var(--jug-text-muted);
+  margin-top: 4px;
+}
+
+/* ── Charts ── */
+.jug-ai-chart-card {
+  background: var(--jug-card-bg);
+  border: 1px solid var(--jug-border);
+  border-radius: var(--jug-radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--jug-shadow);
+}
+
+.jug-ai-chart-card h4 {
+  margin: 0 0 16px;
+  font-size: 15px;
+}
+
+/* ── Modal ── */
+.jug-ai-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+}
+
+.jug-ai-modal {
+  background: var(--jug-card-bg);
+  border-radius: 12px;
+  padding: 28px;
+  width: 520px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.jug-ai-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.jug-ai-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.jug-ai-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--jug-text-muted);
+  padding: 0;
+  line-height: 1;
+}
+
+.jug-ai-modal-close:hover {
+  color: var(--jug-text);
+}
+
+.jug-ai-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* ── Code Block ── */
+.jug-ai-code-block {
+  border: 1px solid var(--jug-border);
+  border-radius: var(--jug-radius);
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.jug-ai-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--jug-bg);
+  border-bottom: 1px solid var(--jug-border);
+  font-size: 12px;
+  color: var(--jug-text-muted);
+}
+
+.jug-ai-code-block pre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  font-size: 13px;
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.jug-ai-code-block code {
+  font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+}
+
+/* ── Spinner ── */
+.jug-ai-spinner {
+  display: inline-block;
+  border: 3px solid var(--jug-border);
+  border-top-color: var(--jug-primary);
+  border-radius: 50%;
+  animation: jug-spin 0.6s linear infinite;
+}
+
+@keyframes jug-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Utilities ── */
+.jug-ai-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.jug-ai-error {
+  color: var(--jug-danger);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.jug-ai-success {
+  color: var(--jug-success);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.jug-ai-muted {
+  color: var(--jug-text-muted);
+  font-size: 13px;
+}
+
+.jug-ai-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--jug-text-muted);
+}
+
+.jug-ai-empty-state p {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.jug-ai-success-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--jug-radius);
+  padding: 20px;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.jug-ai-success-box p {
+  color: #16a34a;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+/* ── Settings Page ── */
+.jug-ai-settings h2 {
+  margin: 0 0 24px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.jug-ai-settings .jug-ai-card + .jug-ai-card {
+  margin-top: 20px;
+}
