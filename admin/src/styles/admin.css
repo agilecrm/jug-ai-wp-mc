@@ -1277,11 +1277,6 @@
 .jug-home-hero-form {
   display: flex;
   align-items: center;
-  gap: 0;
-  max-width: 620px;
-  background: var(--jug-h-surface);
-  border-radius: 14px;
-  overflow: hidden;
 }
 
 .jug-home-url-input-wrap {
@@ -1310,13 +1305,14 @@
 .jug-home-cta-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: var(--jug-h-green-dim);
   color: #000;
   border: none;
-  padding: 30px 28px;
-  border-radius: 0 14px 14px 0;
-  font-size: 15px;
+  padding: 18px 48px;
+  border-radius: 14px;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s;
@@ -1325,6 +1321,30 @@
 
 .jug-home-cta-btn:hover {
   background: var(--jug-h-green);
+}
+
+/* ── Configured state ── */
+.jug-home-configured-block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.jug-home-configured-text {
+  font-size: 17px;
+  color: #ccc;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.jug-home-configured-text strong {
+  color: var(--jug-h-green);
+}
+
+.jug-home-configured-block .jug-home-cta-btn {
+  text-decoration: none;
+  display: inline-flex;
+  width: fit-content;
 }
 
 /* ── Trust badges ── */
@@ -1819,6 +1839,19 @@
   .jug-home-feature-card {
     flex: 1 1 calc(50% - 7px);
     min-width: 180px;
+  }
+
+  .jug-dash-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .jug-dash-columns .jug-home-sidebar {
+    padding-top: 28px;
+    border-top: 1px solid var(--jug-h-border);
+  }
+
+  #jug-ai-admin-root .jug-ai-bot-grid-sidebar {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
 
   .jug-home-hero-title {
@@ -2822,6 +2855,23 @@
   color: #555;
 }
 
+.jug-step-url-readonly {
+  cursor: default;
+}
+
+.jug-step-url-readonly:focus-within {
+  border-color: var(--ob-border) !important;
+  box-shadow: none !important;
+}
+
+.jug-step-url-value {
+  padding: 10px 0;
+  font-size: 14px;
+  color: var(--ob-text, var(--jug-text));
+  flex: 1;
+  user-select: all;
+}
+
 /* StepScraping pipeline dark */
 .jug-onboarding-modal .jug-pipeline-bar-track {
   background: rgba(255, 255, 255, 0.06);
@@ -3308,6 +3358,13 @@
    ═══════════════════════════════════════════ */
 
 #jug-ai-admin-root .jug-ai-dashboard {
+  --jug-h-bg: #0a0a0a;
+  --jug-h-surface: #141414;
+  --jug-h-border: #222;
+  --jug-h-green: #4ade80;
+  --jug-h-green-dim: #22c55e;
+  --jug-h-text: #f0f0f0;
+  --jug-h-muted: #888;
   padding: 8px 0;
 }
 
@@ -3372,6 +3429,26 @@
 
 #jug-ai-admin-root .jug-dash-connect-btn {
   margin-top: 0;
+}
+
+/* ── Dashboard two-column grid ── */
+#jug-ai-admin-root .jug-dash-columns {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  column-gap: 48px;
+  align-items: start;
+}
+
+#jug-ai-admin-root .jug-dash-main {
+  min-width: 0;
+}
+
+#jug-ai-admin-root .jug-dash-columns .jug-home-sidebar {
+  padding-top: 8px;
+}
+
+#jug-ai-admin-root .jug-ai-bot-grid-sidebar {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 #jug-ai-admin-root .jug-dash-empty-card {

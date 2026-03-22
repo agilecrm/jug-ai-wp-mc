@@ -30,12 +30,31 @@ export default function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [onboardingUrl, setOnboardingUrl] = useState('');
   const [showHome, setShowHome] = useState(!isLoggedIn);
+  /** Check wp_options site_name to decide if the site is already configured. */
+  const [siteConfigured, setSiteConfigured] = useState<boolean>(
+    !!(window.jugAiConfig?.settings?.site_name)
+  );
 
   useEffect(() => {
     const onHashChange = () => setRoute(getRoute());
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
+
+  /** Re-read site_name from the live jugAiConfig / wp_options mirror. */
+  const checkSiteConfigured = useCallback(() => {
+    setSiteConfigured(!!(window.jugAiConfig?.settings?.site_name));
+  }, []);
+
+  /** On mount, if logged in and site is configured, auto-redirect to dashboard. */
+  useEffect(() => {
+    if (isLoggedIn && siteConfigured) {
+      const currentRoute = getRoute();
+      if (currentRoute === '/' || currentRoute === '') {
+        window.location.hash = '#/dashboard';
+      }
+    }
+  }, [isLoggedIn]);
 
   /** WordPress REST returned 401/403 (expired nonce or lost Jug session). Open OTP modal; do not use nonexistent #/login route. */
   useEffect(() => {
@@ -66,6 +85,10 @@ export default function App() {
   const closeOnboarding = () => {
     setShowOnboarding(false);
     setOnboardingUrl('');
+    // Re-check — user may have just created a site during onboarding
+    if (isLoggedIn) {
+      checkSiteConfigured();
+    }
   };
 
   const handleAuthRequired = useCallback(() => {
@@ -80,9 +103,20 @@ export default function App() {
     window.jugAiConfig.isLoggedIn = true;
     window.jugAiConfig.userName = name;
     window.jugAiConfig.userEmail = email;
-    closeOnboarding();
-    window.location.hash = '#/dashboard';
-  }, []);
+
+    // Notify any listening onboarding step that auth succeeded
+    window.dispatchEvent(new CustomEvent('jug-ai:auth-success'));
+
+    // If onboarding is open, keep it open (user may have logged in mid-flow)
+    if (showOnboarding) {
+      return;
+    }
+
+    // Check wp_options site_name to decide where to route
+    const hasSite = !!(window.jugAiConfig?.settings?.site_name);
+    setSiteConfigured(hasSite);
+    window.location.hash = hasSite ? '#/dashboard' : '#/';
+  }, [showOnboarding]);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -110,7 +144,7 @@ export default function App() {
           onLoginClick={handleAuthRequired}
           onLogout={handleLogout}
         />
-        <HomePage onGetStarted={handleGetStarted} />
+        <HomePage onGetStarted={handleGetStarted} siteConfigured={false} />
         <Footer />
         {showOnboarding && (
           <OnboardingModal
@@ -127,6 +161,9 @@ export default function App() {
   }
 
   const renderPage = () => {
+    if (route === '/' || route === '') {
+      return <HomePage onGetStarted={handleGetStarted} siteConfigured={siteConfigured} />;
+    }
     if (route.startsWith('/conversations')) return <ConversationsPage route={route} />;
     if (route.startsWith('/settings')) return <SettingsPage />;
     return (
@@ -142,6 +179,7 @@ export default function App() {
       <Header
         isLoggedIn={isLoggedIn}
         user={user}
+        route={route}
         onLoginClick={handleAuthRequired}
         onLogout={handleLogout}
       />

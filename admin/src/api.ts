@@ -31,16 +31,19 @@ async function request(method: string, path: string, body?: any): Promise<any> {
   clearTimeout(timeout);
 
   if (res.status === 401 || res.status === 403) {
+    const body = await res.json().catch(() => ({}));
     window.dispatchEvent(new CustomEvent('jug-ai:rest-unauthorized'));
-    throw new Error('Unauthorized');
+    throw new Error(body.message || body.error || 'Session expired. Please log in again.');
   }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `Request failed (${res.status})`);
+    throw new Error(err.message || err.error || `Request failed (${res.status})`);
   }
 
-  return res.json();
+  const text = await res.text();
+  if (!text) return null;
+  return JSON.parse(text);
 }
 
 const api = {

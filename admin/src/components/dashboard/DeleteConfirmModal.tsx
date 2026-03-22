@@ -19,11 +19,18 @@ export default function DeleteConfirmModal({ open, onClose, botUuid, botName, on
     if (!botUuid) return;
     setDeleting(true);
     try {
-      await api.del(`bots/${botUuid}`);
+      // Cascade delete: removes site, bots, embeddings, chat histories, and user profile entries
+      await api.del(`sites/${botUuid}`);
+      // Clear local config so home page no longer shows "Go to Bot"
+      if (window.jugAiConfig?.settings) {
+        window.jugAiConfig.settings.site_name = '';
+        window.jugAiConfig.settings.active_bot_uuid = '';
+        window.jugAiConfig.settings.widget_enabled = false;
+      }
       onDeleted();
       onClose();
     } catch {
-      // Still close on error -- the bot may already be gone
+      // Still close on error -- the site may already be gone
       onClose();
     } finally {
       setDeleting(false);

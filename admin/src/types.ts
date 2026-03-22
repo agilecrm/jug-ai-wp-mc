@@ -48,6 +48,7 @@ export interface PluginSettings {
   widget_enabled: boolean;
   display_on: 'all' | 'specific' | 'exclude';
   display_pages: string[];
+  site_name?: string;
   custom_api_url?: string;
 }
 

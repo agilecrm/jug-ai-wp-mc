@@ -61,6 +61,11 @@ class Jug_AI_Api_Client {
 			return new WP_Error( 'jug_ai_api_error', $message, array( 'status' => $code ) );
 		}
 
+		if ( null === $data && '' !== $raw ) {
+			error_log( 'Jug AI: API returned non-JSON response for ' . $endpoint . ': ' . substr( $raw, 0, 200 ) );
+			return new WP_Error( 'jug_ai_invalid_response', 'The Jug AI API returned an invalid response.', array( 'status' => 502 ) );
+		}
+
 		return $data;
 	}
 
@@ -138,6 +143,13 @@ class Jug_AI_Api_Client {
 
 	public static function delete_bot( $uuid ) {
 		return self::delete( '/bots/' . sanitize_text_field( $uuid ) );
+	}
+
+	/**
+	 * Cascade-delete a site and all related data (embeddings, bots, chat histories, user profile entries).
+	 */
+	public static function delete_site( $uuid ) {
+		return self::delete( '/sites/' . sanitize_text_field( $uuid ) );
 	}
 
 	public static function generate_prompt( $data ) {

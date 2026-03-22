@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 interface HeaderProps {
   isLoggedIn: boolean;
   user: { name: string; email: string } | null;
+  route?: string;
   onLoginClick: () => void;
   onLogout: () => void;
 }
@@ -15,7 +16,7 @@ function getFirstLetter(name: string, email?: string): string {
   return '?';
 }
 
-export default function Header({ isLoggedIn, user, onLoginClick, onLogout }: HeaderProps) {
+export default function Header({ isLoggedIn, user, route, onLoginClick, onLogout }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -73,7 +74,17 @@ export default function Header({ isLoggedIn, user, onLoginClick, onLogout }: Hea
             </a>
 
             {isLoggedIn ? (
-              <div className="jug-ai-header-user-menu" ref={menuRef}>
+              <>
+                {(!route || route === '/') && (
+                  <a href="#/dashboard" className="jug-ai-header-icon-link">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      <circle cx="12" cy="10" r="1" /><circle cx="8" cy="10" r="1" /><circle cx="16" cy="10" r="1" />
+                    </svg>
+                    Go to Bot
+                  </a>
+                )}
+                <div className="jug-ai-header-user-menu" ref={menuRef}>
                 <button
                   type="button"
                   className="jug-ai-header-avatar"
@@ -100,6 +111,7 @@ export default function Header({ isLoggedIn, user, onLoginClick, onLogout }: Hea
                   </div>
                 )}
               </div>
+              </>
             ) : (
               <button
                 type="button"

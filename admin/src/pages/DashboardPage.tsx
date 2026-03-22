@@ -9,6 +9,7 @@ import ChatLogsModal from '../components/dashboard/ChatLogsModal';
 import BotPreviewModal from '../components/dashboard/BotPreviewModal';
 import DeleteConfirmModal from '../components/dashboard/DeleteConfirmModal';
 import { normalizeBotsPayload } from '../utils/normalizeBots';
+import FeaturesSidebar from '../components/shared/FeaturesSidebar';
 
 interface Props {
   onOpenOnboarding: () => void;
@@ -124,6 +125,8 @@ export default function DashboardPage({ onOpenOnboarding, onConnectJug }: Props)
 
   return (
     <div className="jug-ai-dashboard">
+      <div className="jug-dash-columns">
+      <div className="jug-dash-main">
       <h1 className="jug-dash-greeting">
         {greeting}{userName ? `, ${userName}` : ''}!
       </h1>
@@ -177,7 +180,7 @@ export default function DashboardPage({ onOpenOnboarding, onConnectJug }: Props)
           <span className="jug-dash-empty-hint">Add your first website to train an AI chatbot</span>
         </div>
       ) : jugAccountConnected && !botsLoadError ? (
-        <div className="jug-ai-bot-grid">
+        <div className="jug-ai-bot-grid jug-ai-bot-grid-sidebar">
           {bots.map((bot) => (
             <BotCard
               key={bot.uuid}
@@ -197,6 +200,10 @@ export default function DashboardPage({ onOpenOnboarding, onConnectJug }: Props)
           ))}
         </div>
       ) : null}
+      </div>
+
+      <FeaturesSidebar />
+      </div>
 
       {stubModal && (
         <div className="jug-ai-modal-overlay" onClick={() => setStubModal(null)}>

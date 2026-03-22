@@ -4,6 +4,7 @@ import api from '../../api';
 import Spinner from '../shared/Spinner';
 
 type TrainingStep = 'processing' | 'embedding' | 'creating_bot' | null;
+type Phase = 'idle' | 'scraping' | 'training' | 'awaiting_auth' | 'creating_bot_post_auth' | 'complete';
 
 const PIPELINE_STEPS = [
   { key: 'scraping', label: 'Scraping pages' },
@@ -24,10 +25,12 @@ function getDomain(raw: string): string {
 }
 
 function getStepOrder(
-  phase: 'idle' | 'scraping' | 'training' | 'complete',
+  phase: Phase,
   trainingStep: TrainingStep
 ): number {
   if (phase === 'complete') return 4;
+  if (phase === 'awaiting_auth') return 3;
+  if (phase === 'creating_bot_post_auth') return 3;
   if (phase === 'scraping') return 0;
   const order = ['scraping', 'processing', 'embedding', 'creating_bot'];
   return trainingStep ? order.indexOf(trainingStep) : 1;
@@ -80,10 +83,11 @@ export default function StepScraping() {
     websiteUrl, fingerprint, siteUuid,
     companyInfo, editedSummary,
     scrapedPages, addScrapedPage, setScrapedUrls,
-    setBotUuid, completeStep, setStep,
+    setBotUuid, setAgentBotUuid, completeStep, setStep,
+    onAuthRequired,
   } = useOnboarding();
 
-  const [phase, setPhase] = useState<'idle' | 'scraping' | 'training' | 'complete'>('idle');
+  const [phase, setPhase] = useState<Phase>('idle');
   const [trainingStep, setTrainingStep] = useState<TrainingStep>(null);
   const [trainingDetail, setTrainingDetail] = useState('');
   const [error, setError] = useState('');
@@ -193,35 +197,97 @@ export default function StepScraping() {
         }
       }, controller.signal);
 
-      // ── Step 4: Create bot ──
-      setTrainingStep('creating_bot');
-      setTrainingDetail('Creating your bot...');
-
-      const domain = getDomain(websiteUrl);
-      const botName = companyInfo?.name || 'AI Assistant';
-      const prompt = editedSummary
-        || 'You are an intelligent AI agent for this website. You can help users complete tasks, answer questions, and provide recommendations based on the website content.';
-
-      const botResult = await api.post('bots', {
-        name: botName,
-        prompt,
-        trainingSites: [siteUuid],
-        type: 'agent',
-        fingerprint,
-        domain,
-      });
-
-      if (botResult?.uuid) {
-        setBotUuid(botResult.uuid);
+      // ── Step 4: Create bot (requires Jug auth) ──
+      if (!window.jugAiConfig?.isLoggedIn) {
+        // Pause here — user needs to sign in before we can create the bot
+        setPhase('awaiting_auth');
+        setTrainingStep(null);
+        setTrainingDetail('');
+        onAuthRequired();
+        return;
       }
 
-      setPhase('complete');
+      await createBotAndSave();
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         setError(err.message || 'Pipeline failed.');
       }
     }
   }, [websiteUrl, fingerprint, siteUuid, companyInfo, editedSummary, addScrapedPage, setScrapedUrls, setBotUuid]);
+
+  const createBotAndSave = useCallback(async () => {
+    setPhase('creating_bot_post_auth');
+    setTrainingStep('creating_bot');
+    setTrainingDetail('Creating your bots...');
+
+    const domain = getDomain(websiteUrl);
+    const botName = companyInfo?.name || 'AI Assistant';
+    const chatbotPrompt = editedSummary
+      || 'You are a helpful AI assistant for this website. Answer questions based on the website content. Be concise, friendly, and helpful.';
+    const agentPromptText = editedSummary
+      || 'You are an intelligent AI agent for this website. You can help users complete tasks, answer questions, and provide recommendations based on the website content.';
+
+    // Create chatbot
+    const chatbotResult = await api.post('bots', {
+      name: botName,
+      prompt: chatbotPrompt,
+      trainingSites: [siteUuid],
+      type: 'chatbot',
+      fingerprint,
+      domain,
+    });
+
+    if (chatbotResult?.uuid) {
+      setBotUuid(chatbotResult.uuid);
+    }
+
+    // Create agent
+    const agentResult = await api.post('bots', {
+      name: botName,
+      prompt: agentPromptText,
+      trainingSites: [siteUuid],
+      type: 'agent',
+      fingerprint,
+      domain,
+    });
+
+    if (agentResult?.uuid) {
+      setAgentBotUuid(agentResult.uuid);
+    }
+
+    // Save site_name to wp_options right after bot creation
+    const siteName = companyInfo?.name || websiteUrl || '';
+    try {
+      await api.post('settings', { site_name: siteName });
+      if (window.jugAiConfig?.settings) {
+        window.jugAiConfig.settings.site_name = siteName;
+      }
+    } catch (_) { /* non-critical */ }
+
+    setPhase('complete');
+  }, [websiteUrl, fingerprint, siteUuid, companyInfo, editedSummary, setBotUuid, setAgentBotUuid]);
+
+  // Resume bot creation after user logs in mid-flow
+  useEffect(() => {
+    if (phase === 'awaiting_auth' && window.jugAiConfig?.isLoggedIn) {
+      createBotAndSave().catch((err) => {
+        setError(err.message || 'Failed to create bot after login.');
+      });
+    }
+  }, [phase, createBotAndSave]);
+
+  // Listen for login events to detect auth state change
+  useEffect(() => {
+    const handleAuthChange = () => {
+      if (phase === 'awaiting_auth' && window.jugAiConfig?.isLoggedIn) {
+        createBotAndSave().catch((err) => {
+          setError(err.message || 'Failed to create bot after login.');
+        });
+      }
+    };
+    window.addEventListener('jug-ai:auth-success', handleAuthChange);
+    return () => window.removeEventListener('jug-ai:auth-success', handleAuthChange);
+  }, [phase, createBotAndSave]);
 
   useEffect(() => {
     startPipeline();
@@ -239,6 +305,8 @@ export default function StepScraping() {
   const progressValue = (() => {
     const seg = 100 / (PIPELINE_STEPS.length - 1);
     if (phase === 'complete') return 100;
+    if (phase === 'awaiting_auth') return Math.round(seg * 3);
+    if (phase === 'creating_bot_post_auth') return 95;
     if (phase === 'scraping') {
       return Math.min(Math.round((scrapedPages.length / MAX_PAGES) * seg), Math.round(seg));
     }
@@ -266,6 +334,8 @@ export default function StepScraping() {
 
   const buttonLabel = (() => {
     if (phase === 'complete') return null;
+    if (phase === 'awaiting_auth') return null;
+    if (phase === 'creating_bot_post_auth') return 'Creating bot...';
     if (phase === 'scraping') return 'Scraping...';
     switch (trainingStep) {
       case 'processing': return 'Processing...';
@@ -338,7 +408,7 @@ export default function StepScraping() {
             <strong>Pages ({scrapedPages.length})</strong>
             <span className="jug-scrape-urls-count">
               {phase === 'scraping' && <Spinner size={14} />}
-              {(phase === 'complete' || phase === 'training') && (
+              {(phase === 'complete' || phase === 'training' || phase === 'awaiting_auth' || phase === 'creating_bot_post_auth') && (
                 <span className="jug-scrape-urls-check">✓</span>
               )}
             </span>
@@ -363,6 +433,24 @@ export default function StepScraping() {
           </div>
         </div>
 
+        {phase === 'awaiting_auth' && (
+          <div className="jug-ai-card" style={{ textAlign: 'center', padding: '24px 20px' }}>
+            <p style={{ margin: '0 0 12px', fontWeight: 600, fontSize: 16 }}>
+              Sign in to save your bot
+            </p>
+            <p className="jug-ai-muted" style={{ margin: '0 0 16px' }}>
+              Training is complete! Sign in or create an account to save your bot and continue.
+            </p>
+            <button
+              type="button"
+              className="jug-ai-btn-primary"
+              onClick={() => onAuthRequired()}
+            >
+              Sign in / Sign up
+            </button>
+          </div>
+        )}
+
         {error && <p className="jug-ai-error">{error}</p>}
       </div>
 
@@ -371,7 +459,7 @@ export default function StepScraping() {
           type="button"
           className="jug-ai-btn-primary"
           onClick={handleContinue}
-          disabled={phase !== 'complete'}
+          disabled={phase !== 'complete' && phase !== 'awaiting_auth'}
         >
           {buttonLabel ? (
             <>

@@ -82,6 +82,15 @@ class Jug_AI_Rest_Proxy {
 			),
 		) );
 
+		// ── Sites (cascade delete) ──
+		register_rest_route( self::NAMESPACE, '/sites/(?P<uuid>[a-zA-Z0-9\-]+)', array(
+			array(
+				'methods'             => 'DELETE',
+				'callback'            => array( $this, 'delete_site' ),
+				'permission_callback' => array( $this, 'check_authenticated' ),
+			),
+		) );
+
 		// ── Chat ──
 		register_rest_route( self::NAMESPACE, '/chat/stream-url', array(
 			'methods'             => 'GET',
@@ -162,7 +171,23 @@ class Jug_AI_Rest_Proxy {
 	}
 
 	public function check_authenticated() {
-		return current_user_can( 'manage_options' ) && Jug_AI_Settings::is_authenticated();
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new WP_Error(
+				'rest_forbidden',
+				__( 'You do not have permission to access this resource.', 'jug-ai' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		if ( ! Jug_AI_Settings::is_authenticated() ) {
+			return new WP_Error(
+				'jug_ai_not_authenticated',
+				__( 'Jug.ai session expired or not found. Please log in again.', 'jug-ai' ),
+				array( 'status' => 401 )
+			);
+		}
+
+		return true;
 	}
 
 	// ── Helper ──
@@ -251,7 +276,15 @@ class Jug_AI_Rest_Proxy {
 	// ── Bot Callbacks ──
 
 	public function get_bots( WP_REST_Request $request ) {
-		return $this->respond( Jug_AI_Api_Client::get_bots() );
+		$profile = Jug_AI_Api_Client::get_profile();
+
+		if ( is_wp_error( $profile ) ) {
+			return $this->respond( $profile );
+		}
+
+		// The /profile endpoint returns the full user object which contains bots.
+		// Pass the whole profile so the frontend can extract bots from any nested key.
+		return $this->respond( $profile );
 	}
 
 	public function create_bot( WP_REST_Request $request ) {
@@ -273,6 +306,22 @@ class Jug_AI_Rest_Proxy {
 	public function delete_bot( WP_REST_Request $request ) {
 		$uuid = sanitize_text_field( $request->get_param( 'uuid' ) );
 		return $this->respond( Jug_AI_Api_Client::delete_bot( $uuid ) );
+	}
+
+	public function delete_site( WP_REST_Request $request ) {
+		$uuid = sanitize_text_field( $request->get_param( 'uuid' ) );
+		$result = Jug_AI_Api_Client::delete_site( $uuid );
+
+		// On successful cascade delete, clear local wp_options site config.
+		if ( ! is_wp_error( $result ) ) {
+			Jug_AI_Settings::update_settings( array(
+				'site_name'      => '',
+				'active_bot_uuid' => '',
+				'widget_enabled'  => false,
+			) );
+		}
+
+		return $this->respond( $result );
 	}
 
 	public function generate_prompt( WP_REST_Request $request ) {

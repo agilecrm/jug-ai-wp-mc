@@ -16,19 +16,18 @@ export default function StepWebsite() {
     setStep,
   } = useOnboarding();
 
-  const siteUrl =
-    websiteUrl
-    || window.jugAiConfig?.defaultTrainingUrl
-    || window.jugAiConfig?.siteUrl
-    || 'https://attio.com';
-  const [inputUrl, setInputUrl] = useState(siteUrl);
+  const isLocalDev = (url: string) => /localhost|127\.0\.0\.1/.test(url);
+  const rawDefault = window.jugAiConfig?.defaultTrainingUrl || window.jugAiConfig?.siteUrl || '';
+  // In dev (localhost), default to attio.com for a meaningful demo
+  const rawUrl = websiteUrl || rawDefault || '';
+  const siteUrl = rawUrl && !isLocalDev(rawUrl) ? rawUrl : 'https://attio.com';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const autoTriggered = useRef(false);
 
   const handleAnalyze = async () => {
     setError('');
-    const url = inputUrl.trim().startsWith('http') ? inputUrl.trim() : `https://${inputUrl.trim()}`;
+    const url = siteUrl.trim().startsWith('http') ? siteUrl.trim() : `https://${siteUrl.trim()}`;
     setWebsiteUrl(url);
     setLoading(true);
 
@@ -55,9 +54,9 @@ export default function StepWebsite() {
   };
 
   useEffect(() => {
-    if (!companyInfo && !autoTriggered.current && inputUrl.trim()) {
+    if (!companyInfo && !autoTriggered.current && siteUrl.trim()) {
       autoTriggered.current = true;
-      const url = inputUrl.trim().startsWith('http') ? inputUrl.trim() : `https://${inputUrl.trim()}`;
+      const url = siteUrl.trim().startsWith('http') ? siteUrl.trim() : `https://${siteUrl.trim()}`;
       setWebsiteUrl(url);
       handleAnalyze();
     }
@@ -78,31 +77,18 @@ export default function StepWebsite() {
           <span className="jug-step-badge">Free — first 500 chats</span>
         </div>
         <p className="jug-step-subtitle">
-          Enter your URL and go live in minutes. No setup needed.
+          We'll analyze your site and go live in minutes. No setup needed.
         </p>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleAnalyze();
-          }}
-          className="jug-step-form-row"
-        >
+        <div className="jug-step-form-row">
           <div className="jug-ai-field" style={{ flex: 1, marginBottom: 0 }}>
-            <label htmlFor="jug-onb-url">Website URL</label>
-            <div className="jug-step-url-input">
+            <label>Website URL</label>
+            <div className="jug-step-url-input jug-step-url-readonly">
               <span className="jug-step-url-icon">🌐</span>
-              <input
-                id="jug-onb-url"
-                type="text"
-                value={inputUrl}
-                onChange={(e) => setInputUrl((e.target as HTMLInputElement).value)}
-                placeholder="yourcompany.com"
-                required
-              />
+              <span className="jug-step-url-value">{siteUrl}</span>
             </div>
           </div>
-        </form>
+        </div>
 
         {error && <p className="jug-ai-error">{error}</p>}
 

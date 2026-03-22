@@ -53,7 +53,14 @@ class Jug_AI_Settings {
 			return null;
 		}
 
-		return self::decrypt( $encrypted );
+		$token = self::decrypt( $encrypted );
+
+		if ( empty( $token ) ) {
+			error_log( 'Jug AI: stored auth token exists but decryption failed — encryption key may have changed. Clear the token via logout or re-authenticate.' );
+			return null;
+		}
+
+		return $token;
 	}
 
 	public static function set_token( $jwt ) {
@@ -100,6 +107,7 @@ class Jug_AI_Settings {
 			'widget_enabled'  => false,
 			'display_on'      => 'all',
 			'display_pages'   => array(),
+			'site_name'       => '',
 		);
 	}
 
@@ -125,6 +133,7 @@ class Jug_AI_Settings {
 					case 'active_bot_uuid':
 					case 'widget_type':
 					case 'display_on':
+					case 'site_name':
 						$sanitized[ $key ] = sanitize_text_field( $data[ $key ] );
 						break;
 					case 'widget_enabled':

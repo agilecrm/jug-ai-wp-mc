@@ -10,7 +10,7 @@ function getWidgetBase(): string {
 }
 
 export default function StepEmbed() {
-  const { botUuid, close, completeStep, onAuthRequired } = useOnboarding();
+  const { botUuid, websiteUrl, companyInfo, close, completeStep, onAuthRequired } = useOnboarding();
 
   const [widgetType, setWidgetType] = useState<'chatbot' | 'agent'>('chatbot');
   const [saving, setSaving] = useState(false);
@@ -36,11 +36,17 @@ export default function StepEmbed() {
     setError('');
 
     try {
+      const siteName = companyInfo?.name || websiteUrl || '';
       await api.post('settings', {
         active_bot_uuid: botUuid,
         widget_type: widgetType,
         widget_enabled: true,
+        site_name: siteName,
       });
+      // Update local config so HomePage picks it up immediately
+      if (window.jugAiConfig?.settings) {
+        window.jugAiConfig.settings.site_name = siteName;
+      }
       setSaved(true);
       completeStep(4);
     } catch (err: any) {
