@@ -13,78 +13,310 @@
   --jug-text-muted: #64748b;
   --jug-radius: 8px;
   --jug-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  /* Shared content width — header, footer, home grid, main use the same line */
+  --jug-shell-max: 1200px;
+  --jug-shell-pad: 40px;
 
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 14px;
   color: var(--jug-text);
   line-height: 1.5;
+  /* Full-bleed dark shell over WP admin padding (removes white left/right strips) */
+  background: #0a0a0a;
+  box-sizing: border-box;
+  margin: -10px -20px 0 -20px;
+  padding: 10px 20px 0;
+  min-height: calc(100vh - 32px);
 }
 
 /* ── Layout ── */
 .jug-ai-app {
   display: flex;
   min-height: calc(100vh - 32px);
-  background: var(--jug-bg);
-  margin-left: -20px;
-  margin-top: -10px;
+  background: #0a0a0a;
 }
 
-.jug-ai-sidebar {
-  width: 220px;
-  background: var(--jug-card-bg);
-  border-right: 1px solid var(--jug-border);
-  padding: 20px 0;
+.jug-ai-app.jug-ai-app-header-layout {
+  flex-direction: column;
+}
+
+/* ── Header Bar ── */
+.jug-ai-header {
+  background: #0a0a0a;
+  border-bottom: 1px solid #222;
   flex-shrink: 0;
 }
 
-.jug-ai-sidebar-brand {
+.jug-ai-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--jug-shell-max);
+  margin: 0 auto;
+  padding: 0 var(--jug-shell-pad);
+  height: 72px;
+  box-sizing: border-box;
+}
+
+.jug-ai-header-left {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.jug-ai-header-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 20px 20px;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--jug-primary);
-  border-bottom: 1px solid var(--jug-border);
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: -0.3px;
 }
 
-.jug-ai-sidebar-brand svg {
-  color: var(--jug-primary);
+.jug-ai-header-brand:hover {
+  color: #4ade80;
 }
 
-.jug-ai-sidebar-nav {
-  list-style: none;
-  margin: 16px 0 0;
-  padding: 0;
+.jug-ai-header-brand svg {
+  color: #fff;
 }
 
-.jug-ai-sidebar-nav li a {
-  display: block;
-  padding: 10px 20px;
-  color: var(--jug-text);
+.jug-ai-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.jug-ai-header-nav a {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #888;
   text-decoration: none;
   transition: background 0.15s, color 0.15s;
 }
 
-.jug-ai-sidebar-nav li a:hover {
-  background: var(--jug-bg);
+.jug-ai-header-nav a:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f0f0f0;
 }
 
-.jug-ai-sidebar-nav li.active a {
-  color: var(--jug-primary);
+.jug-ai-header-nav a.active {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
   font-weight: 600;
-  background: #eef2ff;
-  border-right: 3px solid var(--jug-primary);
+}
+
+.jug-ai-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ── Header Icon Links (Website, Pricing, Login) ── */
+.jug-ai-header-icon-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #888;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.jug-ai-header-icon-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.jug-ai-header-icon-link svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.jug-ai-header-icon-link:hover svg {
+  opacity: 1;
+}
+
+/* ── User Menu Dropdown ── */
+.jug-ai-header-user-menu {
+  position: relative;
+}
+
+.jug-ai-header-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: var(--jug-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  padding: 4px;
+}
+
+.jug-ai-header-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ccc;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+  text-align: left;
+}
+
+.jug-ai-header-dropdown button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.jug-ai-header-dropdown button svg {
+  color: #888;
+  flex-shrink: 0;
+}
+
+.jug-ai-header-logout-btn {
+  color: #f87171;
+}
+
+.jug-ai-header-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+}
+
+.jug-ai-header-logout-btn svg {
+  color: #f87171 !important;
+}
+
+/* ── Avatar Button ── */
+.jug-ai-header-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #000;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.jug-ai-header-avatar:hover {
+  opacity: 0.85;
+}
+
+/* ── User Info in Dropdown ── */
+.jug-ai-header-user-info {
+  padding: 10px 12px;
+  border-bottom: 1px solid #2a2a2a;
+  margin-bottom: 4px;
+}
+
+.jug-ai-header-user-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f0f0f0;
+  line-height: 1.4;
+}
+
+.jug-ai-header-user-email {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+/* ── Login Page Main ── */
+.jug-ai-login-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0a;
+}
+
+/* ── Footer ── */
+.jug-ai-footer {
+  background: #0a0a0a;
+  border-top: 1px solid #222;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+.jug-ai-footer-inner {
+  max-width: var(--jug-shell-max);
+  margin: 0 auto;
+  padding: 20px var(--jug-shell-pad);
+  text-align: center;
+  font-size: 13px;
+  color: #555;
+  box-sizing: border-box;
+}
+
+.jug-ai-footer a {
+  color: #888;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.jug-ai-footer a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ── Welcome Banner ── */
+.jug-ai-welcome-banner {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border: 1px solid rgba(79, 70, 229, 0.15);
+  border-radius: var(--jug-radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.jug-ai-welcome-banner h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--jug-text);
 }
 
 .jug-ai-main {
   flex: 1;
-  padding: 24px 32px;
-  max-width: 1200px;
-}
-
-.jug-ai-main.with-sidebar {
-  margin-left: 0;
+  max-width: var(--jug-shell-max);
+  margin: 0 auto;
+  padding: 24px var(--jug-shell-pad);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ── Page Header ── */
@@ -340,71 +572,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-/* ── Login ── */
-.jug-ai-login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-}
-
-.jug-ai-login-card {
-  background: var(--jug-card-bg);
-  border: 1px solid var(--jug-border);
-  border-radius: 12px;
-  padding: 40px;
-  width: 400px;
-  max-width: 100%;
-  box-shadow: var(--jug-shadow);
-}
-
-.jug-ai-login-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.jug-ai-login-header h1 {
-  font-size: 28px;
-  color: var(--jug-primary);
-  margin: 0 0 4px;
-}
-
-.jug-ai-login-header p {
-  color: var(--jug-text-muted);
-  margin: 0;
-}
-
-/* ── Tabs ── */
-.jug-ai-tabs {
-  display: flex;
-  gap: 0;
-  margin-bottom: 20px;
-  border-bottom: 2px solid var(--jug-border);
-}
-
-.jug-ai-tabs button {
-  flex: 1;
-  padding: 10px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--jug-text-muted);
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.jug-ai-tabs button.active {
-  color: var(--jug-primary);
-  border-bottom-color: var(--jug-primary);
-}
-
-.jug-ai-tabs button:hover {
-  color: var(--jug-text);
 }
 
 /* ── OTP Input ── */
@@ -960,4 +1127,3232 @@
 
 .jug-ai-settings .jug-ai-card + .jug-ai-card {
   margin-top: 20px;
+}
+
+/* ═══════════════════════════════════════════
+   HOME PAGE — Dark Theme with Green Accents
+   ═══════════════════════════════════════════ */
+
+.jug-home {
+  --jug-h-bg: #0a0a0a;
+  --jug-h-surface: #141414;
+  --jug-h-border: #222;
+  --jug-h-green: #4ade80;
+  --jug-h-green-dim: #22c55e;
+  --jug-h-text: #f0f0f0;
+  --jug-h-muted: #888;
+
+  background: var(--jug-h-bg);
+  flex: 1;
+  min-height: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--jug-h-text);
+}
+
+/* ── Grid: header + body + footer share columns ── */
+.jug-home-columns {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  column-gap: 48px;
+  max-width: var(--jug-shell-max);
+  margin: 0 auto;
+  padding: 0 var(--jug-shell-pad);
+  box-sizing: border-box;
+}
+
+/* ── Header row ── */
+.jug-home-topbar-left {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  height: 72px;
+}
+
+.jug-home-topbar-right {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 24px;
+  height: 72px;
+}
+
+.jug-home-topbar-right a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--jug-h-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+
+.jug-home-topbar-right a:hover {
+  color: #fff;
+}
+
+.jug-home-topbar-right a svg {
+  opacity: 0.7;
+}
+
+.jug-home-topbar-right a:hover svg {
+  opacity: 1;
+}
+
+.jug-home-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.jug-home-logo svg {
+  color: #fff;
+}
+
+.jug-home-logo:hover {
+  color: var(--jug-h-green);
+}
+
+/* ── Body row ── */
+.jug-home-main {
+  grid-column: 1;
+  min-width: 0;
+  padding: 60px 0 0;
+}
+
+.jug-home-sidebar {
+  grid-column: 2;
+  padding: 60px 0 0 0;
+}
+
+/* ── Badge ── */
+.jug-home-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--jug-h-green-dim);
+  color: var(--jug-h-green);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 28px;
+  background: rgba(74, 222, 128, 0.06);
+}
+
+/* ── Hero ── */
+.jug-home-hero-title {
+  font-size: 60px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0 0 24px;
+  color: #fff;
+  letter-spacing: -2px;
+}
+
+.jug-home-green {
+  color: var(--jug-h-green);
+}
+
+.jug-home-strike {
+  text-decoration: line-through;
+  color: #555;
+}
+
+.jug-home-hero-subtitle {
+  font-size: 19px;
+  color: var(--jug-h-muted);
+  max-width: 580px;
+  margin: 0 0 36px;
+  line-height: 1.65;
+}
+
+/* ── URL input bar ── */
+.jug-home-hero-form {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  max-width: 620px;
+  background: var(--jug-h-surface);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.jug-home-url-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 30px 20px;
+}
+
+.jug-home-url-input {
+  border: none;
+  outline: none;
+  font-size: 15px;
+  flex: 1;
+  background: transparent;
+  color: var(--jug-h-text);
+}
+
+.jug-home-url-input::placeholder {
+  color: #555;
+}
+
+.jug-home-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--jug-h-green-dim);
+  color: #000;
+  border: none;
+  padding: 30px 28px;
+  border-radius: 0 14px 14px 0;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.jug-home-cta-btn:hover {
+  background: var(--jug-h-green);
+}
+
+/* ── Trust badges ── */
+.jug-home-trust {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.jug-home-trust span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--jug-h-muted);
+}
+
+.jug-home-trust svg {
+  color: var(--jug-h-muted);
+  opacity: 0.7;
+}
+
+/* ── Right sidebar ── */
+.jug-home-sidebar-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--jug-h-muted);
+  margin: 0 0 20px;
+}
+
+.jug-home-features {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.jug-home-feature-card {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--jug-h-border);
+  border-radius: 12px;
+  background: var(--jug-h-surface);
+  transition: border-color 0.2s;
+}
+
+.jug-home-feature-card:hover {
+  border-color: #444;
+}
+
+.jug-home-feature-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--jug-h-green-dim);
+  color: #000;
+  border-radius: 9px;
+}
+
+.jug-home-feature-icon svg {
+  color: #000;
+}
+
+.jug-home-feature-card h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 3px;
+  color: #fff;
+}
+
+.jug-home-feature-card p {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Footer ── */
+.jug-home-footer {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--jug-h-border);
+  margin-top: 60px;
+  padding: 20px 0;
+  text-align: center;
+  color: #555;
+  font-size: 13px;
+}
+
+/* ── Auth Modal (dark theme, two-panel) ── */
+.jug-auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+}
+
+.jug-auth-modal {
+  position: relative;
+  display: flex;
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  width: 780px;
+  max-width: 95vw;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+  color: #f0f0f0;
+}
+
+.jug-auth-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  z-index: 2;
+}
+
+.jug-auth-close:hover {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+/* ── Left Panel ── */
+.jug-auth-left {
+  width: 340px;
+  flex-shrink: 0;
+  background: #111;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-right: 1px solid #2a2a2a;
+}
+
+.jug-auth-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.jug-auth-grid-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 6px;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  background: #1a1a1a;
+  transition: border-color 0.15s;
+}
+
+.jug-auth-grid-tile:hover {
+  border-color: #444;
+}
+
+.jug-auth-grid-icon {
+  color: #4ade80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jug-auth-grid-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #666;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ── Left Branding ── */
+.jug-auth-brand {
+  flex: 1;
+  padding: 16px;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.jug-auth-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.jug-auth-brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.jug-auth-brand-heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px;
+  line-height: 1.4;
+}
+
+.jug-auth-brand-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Right Panel ── */
+.jug-auth-right {
+  flex: 1;
+  padding: 36px 36px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.jug-auth-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.jug-auth-subtitle {
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 28px;
+  line-height: 1.5;
+}
+
+.jug-auth-field {
+  margin-bottom: 20px;
+}
+
+.jug-auth-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ccc;
+  margin-bottom: 8px;
+}
+
+/* Auth inputs — ID prefix for max specificity over WP admin */
+#jug-ai-admin-root .jug-auth-modal .jug-auth-field > input,
+#jug-ai-admin-root .jug-auth-modal .jug-auth-field > input[type="text"],
+#jug-ai-admin-root .jug-auth-modal .jug-auth-field > input[type="email"] {
+  width: 100% !important;
+  padding: 14px 16px !important;
+  background-color: #1a1a1a !important;
+  background-image: none !important;
+  border: 1px solid #333 !important;
+  border-radius: 10px !important;
+  color: #f0f0f0 !important;
+  font-size: 15px !important;
+  font-family: inherit;
+  box-sizing: border-box !important;
+  outline: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  box-shadow: none !important;
+  height: auto !important;
+  line-height: 1.4;
+  margin: 0;
+  -webkit-text-fill-color: #f0f0f0 !important;
+}
+
+#jug-ai-admin-root .jug-auth-modal .jug-auth-field > input:focus,
+#jug-ai-admin-root .jug-auth-modal .jug-auth-field > input[type="text"]:focus,
+#jug-ai-admin-root .jug-auth-modal .jug-auth-field > input[type="email"]:focus {
+  border-color: #555 !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06) !important;
+  background-color: #1a1a1a !important;
+  color: #f0f0f0 !important;
+  outline: none !important;
+  -webkit-text-fill-color: #f0f0f0 !important;
+}
+
+#jug-ai-admin-root .jug-auth-modal .jug-auth-field input::placeholder {
+  color: #555;
+}
+
+/* Fix browser autofill white background */
+#jug-ai-admin-root .jug-auth-modal input:-webkit-autofill,
+#jug-ai-admin-root .jug-auth-modal input:-webkit-autofill:hover,
+#jug-ai-admin-root .jug-auth-modal input:-webkit-autofill:focus,
+#jug-ai-admin-root .jug-auth-modal input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #1a1a1a inset !important;
+  -webkit-text-fill-color: #f0f0f0 !important;
+  border: 1px solid #333 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.jug-auth-error {
+  color: #f87171;
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.jug-auth-modal .jug-auth-submit {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px;
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.15s;
+  font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+  line-height: 1.4;
+  height: auto;
+  box-shadow: none;
+  text-decoration: none;
+}
+
+.jug-auth-modal .jug-auth-submit:hover {
+  background: #e0e0e0;
+  color: #000;
+}
+
+.jug-auth-modal .jug-auth-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.jug-auth-switch {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin: 24px 0 0;
+}
+
+.jug-auth-switch button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.jug-auth-switch button:hover {
+  text-decoration: underline;
+}
+
+/* ── OTP step ── */
+.jug-auth-otp-step {
+  text-align: center;
+}
+
+.jug-auth-otp-step .jug-auth-title {
+  text-align: center;
+}
+
+.jug-auth-otp-step .jug-auth-subtitle {
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.jug-auth-otp-step strong {
+  color: #fff;
+  display: block;
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.jug-auth-otp-step .jug-ai-otp-input {
+  justify-content: center;
+  margin: 28px 0;
+}
+
+.jug-auth-modal .jug-auth-otp-step .jug-ai-otp-digit {
+  background: #1a1a1a;
+  border: 2px solid #333;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 600;
+  width: 56px;
+  height: 60px;
+  text-align: center;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+  box-shadow: none;
+}
+
+.jug-auth-modal .jug-auth-otp-step .jug-ai-otp-digit:focus {
+  border-color: #555;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+  background: #1a1a1a;
+  color: #fff;
+}
+
+/* ── Auth Modal Responsive ── */
+@media (max-width: 640px) {
+  .jug-auth-modal {
+    flex-direction: column;
+    width: 95vw;
+  }
+
+  .jug-auth-left {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #2a2a2a;
+    padding: 16px;
+  }
+
+  .jug-auth-grid {
+    gap: 6px;
+  }
+
+  .jug-auth-grid-tile {
+    padding: 12px 6px;
+  }
+
+  .jug-auth-right {
+    padding: 28px 20px 24px;
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  #jug-ai-admin-root {
+    --jug-shell-pad: 20px;
+  }
+
+  .jug-home-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .jug-home-topbar-left,
+  .jug-home-topbar-right,
+  .jug-home-main,
+  .jug-home-sidebar {
+    grid-column: 1;
+  }
+
+  .jug-home-topbar-right {
+    justify-content: flex-start;
+  }
+
+  .jug-home-sidebar {
+    padding-top: 28px;
+    border-top: 1px solid var(--jug-h-border);
+  }
+
+  .jug-home-features {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .jug-home-feature-card {
+    flex: 1 1 calc(50% - 7px);
+    min-width: 180px;
+  }
+
+  .jug-home-hero-title {
+    font-size: 40px;
+  }
+
+  .jug-home-hero-form {
+    flex-direction: column;
+  }
+
+  .jug-home-url-input-wrap {
+    width: 100%;
+  }
+
+  .jug-home-footer {
+    margin-top: 40px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ONBOARDING MODAL
+   ═══════════════════════════════════════════ */
+
+.jug-ai-sidebar-cta {
+  padding: 20px;
+  margin-top: auto;
+}
+
+/* ── Overlay ── */
+.jug-onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100001;
+  backdrop-filter: blur(2px);
+}
+
+/* ── Modal ── */
+.jug-onboarding-modal {
+  background: var(--jug-card-bg);
+  border-radius: 16px;
+  width: 1000px;
+  max-width: 95vw;
+  height: 86vh;
+  max-height: 86vh;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Sidebar Nav ── */
+.jug-onboarding-nav {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--jug-border);
+  background: #f8fafc;
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.jug-onboarding-nav-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--jug-text-muted);
+  margin: 0 0 4px 8px;
+}
+
+.jug-onboarding-nav-divider {
+  height: 1px;
+  background: var(--jug-border);
+  margin-bottom: 8px;
+}
+
+/* Step items */
+.jug-onboarding-step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.jug-onboarding-step-item:hover:not(.disabled) {
+  background: rgba(79, 70, 229, 0.05);
+}
+
+.jug-onboarding-step-item.active {
+  background: rgba(79, 70, 229, 0.1);
+}
+
+.jug-onboarding-step-item.disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.jug-onboarding-step-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  border: 2px solid var(--jug-border);
+  color: var(--jug-text-muted);
+  transition: all 0.2s;
+}
+
+.jug-onboarding-step-item.active .jug-onboarding-step-circle {
+  border-color: var(--jug-primary);
+  color: var(--jug-primary);
+}
+
+.jug-onboarding-step-item.completed .jug-onboarding-step-circle {
+  background: var(--jug-primary);
+  border-color: var(--jug-primary);
+  color: #fff;
+  font-size: 14px;
+}
+
+.jug-onboarding-step-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.jug-onboarding-step-info strong {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--jug-text-muted);
+  line-height: 1.3;
+}
+
+.jug-onboarding-step-item.active .jug-onboarding-step-info strong {
+  color: var(--jug-primary);
+}
+
+.jug-onboarding-step-item.completed .jug-onboarding-step-info strong {
+  color: var(--jug-text);
+}
+
+.jug-onboarding-step-info small {
+  font-size: 11px;
+  color: var(--jug-text-muted);
+}
+
+/* Progress bar */
+.jug-onboarding-progress-bar {
+  margin-top: auto;
+  padding: 16px 8px 0;
+}
+
+.jug-onboarding-progress-track {
+  height: 4px;
+  background: var(--jug-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.jug-onboarding-progress-fill {
+  height: 100%;
+  background: var(--jug-primary);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.jug-onboarding-progress-label {
+  font-size: 11px;
+  color: var(--jug-text-muted);
+  text-align: center;
+  margin: 8px 0 0;
+}
+
+/* ── Content ── */
+.jug-onboarding-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 28px 32px 16px;
+}
+
+/* ── Step Layout ── */
+.jug-step-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.jug-step-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.jug-step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.jug-step-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.jug-step-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--jug-primary);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+.jug-step-subtitle {
+  color: var(--jug-text-muted);
+  font-size: 14px;
+  margin: 4px 0 20px;
+}
+
+.jug-step-footer {
+  border-top: 1px solid var(--jug-border);
+  padding-top: 16px;
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.jug-step-footer .jug-ai-btn-primary {
+  min-width: 140px;
+  justify-content: center;
+}
+
+/* ── StepWebsite ── */
+.jug-step-form-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.jug-step-url-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--jug-border);
+  border-radius: 6px;
+  padding: 0 12px;
+  background: var(--jug-card-bg);
+  transition: border-color 0.15s;
+}
+
+.jug-step-url-input:focus-within {
+  border-color: var(--jug-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.jug-step-url-icon {
+  font-size: 14px;
+  opacity: 0.5;
+  margin-right: 8px;
+}
+
+.jug-step-url-input input {
+  border: none;
+  outline: none;
+  padding: 10px 0;
+  font-size: 14px;
+  background: transparent;
+  color: var(--jug-text);
+  flex: 1;
+  width: 100%;
+}
+
+/* ── StepScraping Pipeline ── */
+.jug-pipeline {
+  margin: 16px 0;
+}
+
+.jug-pipeline-bar {
+  position: relative;
+  padding: 0 12px;
+}
+
+.jug-pipeline-bar-track {
+  height: 12px;
+  background: rgba(79, 70, 229, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.jug-pipeline-bar-fill {
+  height: 100%;
+  background: var(--jug-primary);
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.jug-pipeline-dots {
+  position: absolute;
+  inset: 0 12px;
+  pointer-events: none;
+}
+
+.jug-pipeline-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  border: 2px solid var(--jug-card-bg);
+  background: var(--jug-border);
+  color: var(--jug-text-muted);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.jug-pipeline-dot.completed {
+  background: var(--jug-success);
+  color: #fff;
+}
+
+.jug-pipeline-dot.active {
+  background: var(--jug-primary);
+  color: #fff;
+  animation: jug-pulse 2s ease-in-out infinite;
+}
+
+@keyframes jug-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(79, 70, 229, 0); }
+}
+
+.jug-pipeline-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+.jug-pipeline-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--jug-text-muted);
+  opacity: 0.5;
+}
+
+.jug-pipeline-label.active {
+  color: var(--jug-primary);
+  opacity: 1;
+}
+
+.jug-pipeline-label.completed {
+  color: var(--jug-success);
+  opacity: 1;
+}
+
+/* ── StepSystemPrompt ── */
+.jug-prompt-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.jug-prompt-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.jug-prompt-tabs-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--jug-text);
+  padding-right: 4px;
+  white-space: nowrap;
+}
+
+.jug-prompt-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--jug-border);
+  border-radius: 6px;
+  background: var(--jug-card-bg);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  color: var(--jug-text-muted);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.jug-prompt-tab:hover {
+  background: var(--jug-bg);
+  color: var(--jug-text);
+}
+
+.jug-prompt-tab.active {
+  background: var(--jug-primary);
+  border-color: var(--jug-primary);
+  color: #fff;
+}
+
+.jug-prompt-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.jug-prompt-action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--jug-text-muted);
+  cursor: pointer;
+  transition: color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.jug-prompt-action-link:hover:not(:disabled) {
+  color: var(--jug-primary);
+}
+
+.jug-prompt-action-link:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.jug-step-generating-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--jug-text-muted);
+}
+
+.jug-step-template-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.jug-step-template-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border: 1px solid var(--jug-border);
+  border-radius: 6px;
+  background: var(--jug-card-bg);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--jug-text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.jug-step-template-chip:hover {
+  background: rgba(79, 70, 229, 0.06);
+  color: var(--jug-primary);
+  border-color: rgba(79, 70, 229, 0.3);
+}
+
+.jug-step-template-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── StepBotPreview Chat ── */
+.jug-chat-preview {
+  border: 1px solid var(--jug-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--jug-shadow);
+}
+
+.jug-chat-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--jug-primary);
+  color: #fff;
+  font-size: 14px;
+}
+
+.jug-chat-preview-icon {
+  font-size: 18px;
+}
+
+.jug-chat-preview-messages {
+  height: 280px;
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--jug-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.jug-chat-msg {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.jug-chat-msg-bot {
+  align-self: flex-start;
+  background: var(--jug-card-bg);
+  border: 1px solid var(--jug-border);
+  border-bottom-left-radius: 4px;
+}
+
+.jug-chat-msg-user {
+  align-self: flex-end;
+  background: var(--jug-primary);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.jug-chat-preview-input {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--jug-border);
+  background: var(--jug-card-bg);
+}
+
+.jug-chat-preview-input input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--jug-border);
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  color: var(--jug-text);
+}
+
+.jug-chat-preview-input input:focus {
+  border-color: var(--jug-primary);
+}
+
+/* ── StepBotPreview Grid ── */
+.jug-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  height: 400px;
+}
+
+@media (max-width: 768px) {
+  .jug-preview-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+.jug-preview-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.jug-preview-column-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--jug-text);
+  margin: 0;
+}
+
+.jug-preview-agent-card {
+  flex: 1;
+  display: flex;
+  border: 1px solid var(--jug-border);
+  border-radius: 12px;
+  background: var(--jug-card-bg);
+  box-shadow: var(--jug-shadow);
+}
+
+.jug-preview-agent-card-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.jug-preview-agent-icon {
+  font-size: 32px;
+}
+
+.jug-preview-agent-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--jug-text);
+}
+
+.jug-preview-agent-desc {
+  font-size: 13px;
+  color: var(--jug-text-muted);
+  margin: 0;
+  max-width: 260px;
+}
+
+.jug-preview-column .jug-chat-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.jug-preview-column .jug-chat-preview-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.jug-chat-preview-favicon {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+}
+
+.jug-preview-external-link {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.jug-preview-external-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--jug-primary);
+  text-decoration: none;
+}
+
+.jug-preview-external-link a:hover {
+  text-decoration: underline;
+}
+
+/* ── StepEmbed ── */
+.jug-embed-type-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.jug-embed-type-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--jug-text);
+}
+
+.jug-embed-type-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.jug-embed-type-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--jug-border);
+  border-radius: 6px;
+  background: var(--jug-card-bg);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  color: var(--jug-text-muted);
+}
+
+.jug-embed-type-btn:hover {
+  border-color: var(--jug-primary);
+  color: var(--jug-primary);
+}
+
+.jug-embed-type-btn.active {
+  background: var(--jug-primary);
+  border-color: var(--jug-primary);
+  color: #fff;
+}
+
+.jug-embed-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid var(--jug-border);
+  border-radius: 10px;
+  padding: 16px;
+  background: var(--jug-card-bg);
+}
+
+.jug-embed-info {
+  margin: 0;
+}
+
+.jug-embed-info-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--jug-text);
+}
+
+.jug-embed-info-text {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.jug-embed-reference {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jug-embed-reference-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--jug-text);
+}
+
+.jug-embed-reference-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.jug-embed-footnote {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.jug-embed-inline-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--jug-bg);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════
+   ONBOARDING MODAL — Dark Theme Override
+   ═══════════════════════════════════════════ */
+
+.jug-onboarding-modal {
+  --ob-bg: #0a0a0a;
+  --ob-surface: #141414;
+  --ob-surface-hover: #1a1a1a;
+  --ob-border: #2a2a2a;
+  --ob-text: #f0f0f0;
+  --ob-muted: #888;
+  --ob-green: #4ade80;
+  --ob-green-dim: #22c55e;
+
+  background: var(--ob-bg);
+  border: 1px solid var(--ob-border);
+  color: var(--ob-text);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+}
+
+.jug-onboarding-nav {
+  background: var(--ob-surface);
+  border-right-color: var(--ob-border);
+}
+
+.jug-onboarding-nav-title {
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-nav-divider {
+  background: var(--ob-border);
+}
+
+.jug-onboarding-step-item {
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-step-item:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.jug-onboarding-step-item.active {
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.jug-onboarding-step-circle {
+  border-color: var(--ob-border);
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-step-item.active .jug-onboarding-step-circle {
+  border-color: var(--ob-green);
+  color: var(--ob-green);
+}
+
+.jug-onboarding-step-item.completed .jug-onboarding-step-circle {
+  background: var(--ob-green-dim);
+  border-color: var(--ob-green-dim);
+  color: #000;
+}
+
+.jug-onboarding-step-info strong {
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-step-item.active .jug-onboarding-step-info strong {
+  color: var(--ob-green);
+}
+
+.jug-onboarding-step-item.completed .jug-onboarding-step-info strong {
+  color: var(--ob-text);
+}
+
+.jug-onboarding-step-info small {
+  color: #555;
+}
+
+.jug-onboarding-progress-track {
+  background: var(--ob-border);
+}
+
+.jug-onboarding-progress-fill {
+  background: var(--ob-green-dim);
+}
+
+.jug-onboarding-progress-label {
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-content {
+  background: var(--ob-bg);
+  color: var(--ob-text);
+}
+
+/* Step header / body overrides */
+.jug-onboarding-modal .jug-step-header h2 {
+  color: #fff;
+}
+
+.jug-onboarding-modal .jug-step-badge {
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--ob-green);
+  border-color: rgba(74, 222, 128, 0.25);
+}
+
+.jug-onboarding-modal .jug-step-subtitle {
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-step-footer {
+  border-top-color: var(--ob-border);
+}
+
+.jug-onboarding-modal .jug-ai-btn-primary {
+  background: var(--ob-green-dim);
+  color: #000;
+}
+
+.jug-onboarding-modal .jug-ai-btn-primary:hover {
+  background: var(--ob-green);
+}
+
+/* Cards inside onboarding */
+.jug-onboarding-modal .jug-ai-card {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+  color: var(--ob-text);
+  box-shadow: none;
+}
+
+.jug-onboarding-modal .jug-ai-muted {
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-ai-error {
+  color: #f87171;
+}
+
+.jug-onboarding-modal .jug-ai-success-box {
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.2);
+}
+
+.jug-onboarding-modal .jug-ai-success-box p {
+  color: var(--ob-green);
+}
+
+/* Form fields in onboarding */
+.jug-onboarding-modal .jug-ai-field label {
+  color: #ccc;
+}
+
+.jug-onboarding-modal .jug-ai-field input[type="text"],
+.jug-onboarding-modal .jug-ai-field input[type="url"],
+.jug-onboarding-modal .jug-ai-field select,
+.jug-onboarding-modal .jug-ai-select {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-ai-field input:focus,
+.jug-onboarding-modal .jug-ai-field select:focus {
+  border-color: #555;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+.jug-onboarding-modal .jug-ai-textarea {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-ai-textarea:focus {
+  border-color: #555;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+/* StepWebsite URL input dark */
+.jug-onboarding-modal .jug-step-url-input {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+}
+
+.jug-onboarding-modal .jug-step-url-input:focus-within {
+  border-color: #555;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+.jug-onboarding-modal .jug-step-url-input input {
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-step-url-input input::placeholder {
+  color: #555;
+}
+
+/* StepScraping pipeline dark */
+.jug-onboarding-modal .jug-pipeline-bar-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.jug-onboarding-modal .jug-pipeline-bar-fill {
+  background: var(--ob-green-dim);
+}
+
+.jug-onboarding-modal .jug-pipeline-dot {
+  border-color: var(--ob-bg);
+  background: var(--ob-border);
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-pipeline-dot.completed {
+  background: var(--ob-green-dim);
+  color: #000;
+}
+
+.jug-onboarding-modal .jug-pipeline-dot.active {
+  background: var(--ob-green);
+  color: #000;
+  animation: jug-pulse-dark 2s ease-in-out infinite;
+}
+
+@keyframes jug-pulse-dark {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+}
+
+.jug-onboarding-modal .jug-pipeline-label {
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-pipeline-label.active {
+  color: var(--ob-green);
+}
+
+.jug-onboarding-modal .jug-pipeline-label.completed {
+  color: var(--ob-green-dim);
+}
+
+.jug-onboarding-modal .jug-ai-status {
+  color: var(--ob-muted);
+}
+
+/* StepSystemPrompt dark */
+.jug-onboarding-modal .jug-prompt-tabs-label {
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-prompt-tab {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+  color: var(--ob-muted);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.jug-onboarding-modal .jug-prompt-tab:hover {
+  background: var(--ob-surface-hover);
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-prompt-tab.active {
+  background: var(--ob-green-dim);
+  border-color: var(--ob-green-dim);
+  color: #000;
+}
+
+.jug-onboarding-modal .jug-prompt-action-link {
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-prompt-action-link:hover:not(:disabled) {
+  color: var(--ob-green);
+}
+
+.jug-onboarding-modal .jug-step-generating-overlay {
+  background: rgba(10, 10, 10, 0.9);
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-step-template-chip {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-step-template-chip:hover {
+  background: rgba(74, 222, 128, 0.08);
+  color: var(--ob-green);
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.jug-onboarding-modal .jug-ai-btn-sm {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-ai-btn-sm:hover {
+  background: var(--ob-surface-hover);
+  color: var(--ob-text);
+}
+
+/* StepBotPreview dark */
+.jug-onboarding-modal .jug-preview-column-title {
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-preview-agent-card {
+  border-color: var(--ob-border);
+  background: var(--ob-surface);
+  box-shadow: none;
+}
+
+.jug-onboarding-modal .jug-preview-agent-title {
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-preview-agent-desc {
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-preview-external-link a {
+  color: var(--ob-green);
+}
+
+.jug-onboarding-modal .jug-chat-preview {
+  border-color: var(--ob-border);
+  box-shadow: none;
+}
+
+.jug-onboarding-modal .jug-chat-preview-header {
+  background: var(--ob-green-dim);
+  color: #000;
+}
+
+.jug-onboarding-modal .jug-chat-preview-messages {
+  background: var(--ob-surface);
+}
+
+.jug-onboarding-modal .jug-chat-msg-bot {
+  background: var(--ob-bg);
+  border-color: var(--ob-border);
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-chat-msg-user {
+  background: var(--ob-green-dim);
+  color: #000;
+}
+
+.jug-onboarding-modal .jug-chat-preview-input {
+  background: var(--ob-bg);
+  border-top-color: var(--ob-border);
+}
+
+.jug-onboarding-modal .jug-chat-preview-input input {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-chat-preview-input input::placeholder {
+  color: #555;
+}
+
+.jug-onboarding-modal .jug-chat-preview-input input:focus {
+  border-color: #555;
+}
+
+/* StepEmbed dark */
+.jug-onboarding-modal .jug-embed-type-label {
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-embed-type-btn {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-embed-type-btn:hover {
+  border-color: var(--ob-green);
+  color: var(--ob-green);
+}
+
+.jug-onboarding-modal .jug-embed-type-btn.active {
+  background: var(--ob-green-dim);
+  border-color: var(--ob-green-dim);
+  color: #000;
+}
+
+.jug-onboarding-modal .jug-embed-stack {
+  border-color: var(--ob-border);
+  background: var(--ob-surface);
+}
+
+.jug-onboarding-modal .jug-embed-info-title {
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-embed-reference-label {
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-embed-inline-code {
+  background: var(--ob-bg);
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-ai-btn-secondary {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-ai-btn-secondary:hover {
+  background: var(--ob-surface-hover);
+  color: var(--ob-text);
+}
+
+/* Code block dark inside onboarding */
+.jug-onboarding-modal .jug-ai-code-header {
+  background: var(--ob-surface);
+  border-bottom-color: var(--ob-border);
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-ai-code-block {
+  border-color: var(--ob-border);
+}
+
+/* Badge dark */
+.jug-onboarding-modal .jug-ai-badge {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.jug-onboarding-modal .jug-ai-badge-ready {
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--ob-green);
+}
+
+/* Spinner in dark onboarding */
+.jug-onboarding-modal .jug-ai-spinner {
+  border-color: var(--ob-border);
+  border-top-color: var(--ob-green);
+}
+
+/* ── Responsive adjustments for onboarding modal ── */
+@media (max-width: 768px) {
+  .jug-onboarding-modal {
+    flex-direction: column;
+    height: 95vh;
+    max-height: 95vh;
+  }
+
+  .jug-onboarding-nav {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 12px;
+    gap: 4px;
+    border-right: none;
+    border-bottom: 1px solid var(--ob-border, var(--jug-border));
+  }
+
+  .jug-onboarding-nav-title,
+  .jug-onboarding-nav-divider,
+  .jug-onboarding-step-info,
+  .jug-onboarding-progress-bar {
+    display: none;
+  }
+
+  .jug-onboarding-step-item {
+    padding: 8px;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .jug-step-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+}
+
+/* ── Scrape URLs card ── */
+.jug-scrape-urls-card {
+  display: flex;
+  flex-direction: column;
+  max-height: 340px;
+  overflow: hidden;
+}
+
+.jug-scrape-urls-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ob-border, var(--jug-border));
+  margin-bottom: 4px;
+}
+
+.jug-scrape-urls-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ob-muted, var(--jug-muted));
+}
+
+.jug-scrape-urls-check {
+  color: var(--ob-green, var(--jug-success));
+  font-size: 14px;
+}
+
+.jug-scrape-urls-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.jug-scrape-url-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--ob-border, rgba(255, 255, 255, 0.05));
+}
+
+.jug-scrape-url-row:last-of-type {
+  border-bottom: none;
+}
+
+.jug-scrape-url-num {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ob-border, rgba(255, 255, 255, 0.08));
+  color: var(--ob-muted, var(--jug-muted));
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.jug-scrape-url-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jug-scrape-url-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ob-text, var(--jug-text));
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.jug-scrape-url-link {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--ob-muted, var(--jug-muted));
+  line-height: 1.3;
+}
+
+.jug-scrape-urls-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 0;
+  color: var(--ob-muted, var(--jug-muted));
+  font-size: 13px;
+}
+
+/* ── Logout Confirmation Dialog ── */
+.jug-ai-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100002;
+}
+
+.jug-ai-confirm-box {
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 32px;
+  width: 380px;
+  max-width: 90vw;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.jug-ai-confirm-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+
+.jug-ai-confirm-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin: 0 0 8px;
+}
+
+.jug-ai-confirm-message {
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 28px;
+  line-height: 1.5;
+}
+
+.jug-ai-confirm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.jug-ai-confirm-cancel {
+  flex: 1;
+  padding: 12px 20px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 10px;
+  color: #ccc;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+
+.jug-ai-confirm-cancel:hover {
+  background: #222;
+  border-color: #444;
+  color: #fff;
+}
+
+.jug-ai-confirm-proceed {
+  flex: 1;
+  padding: 12px 20px;
+  background: #ef4444;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.jug-ai-confirm-proceed:hover {
+  background: #dc2626;
+}
+
+/* ═══════════════════════════════════════════
+   DASHBOARD — Dark Theme
+   ═══════════════════════════════════════════ */
+
+#jug-ai-admin-root .jug-ai-dashboard {
+  padding: 8px 0;
+}
+
+#jug-ai-admin-root .jug-dash-greeting {
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 6px;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+#jug-ai-admin-root .jug-dash-subtitle {
+  font-size: 15px;
+  color: #888;
+  margin: 0 0 32px;
+}
+
+/* API / account explainers (plugin does not query MongoDB directly) */
+#jug-ai-admin-root .jug-dash-api-notice {
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  line-height: 1.55;
+  max-width: 720px;
+}
+
+#jug-ai-admin-root .jug-dash-api-notice strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #f0f0f0;
+}
+
+#jug-ai-admin-root .jug-dash-api-notice p {
+  margin: 0;
+  color: #aaa;
+}
+
+#jug-ai-admin-root .jug-dash-api-notice-warn {
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+}
+
+#jug-ai-admin-root .jug-dash-api-notice-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+#jug-ai-admin-root .jug-dash-api-notice-error strong {
+  color: #fca5a5;
+}
+
+#jug-ai-admin-root .jug-dash-retry {
+  margin-top: 12px;
+}
+
+#jug-ai-admin-root .jug-dash-api-notice-actions {
+  margin-top: 14px !important;
+}
+
+#jug-ai-admin-root .jug-dash-connect-btn {
+  margin-top: 0;
+}
+
+#jug-ai-admin-root .jug-dash-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 48px 24px;
+  border: 2px dashed #333 !important;
+  border-radius: 14px;
+  background: transparent !important;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  font-family: inherit;
+  text-align: center;
+  box-sizing: border-box;
+  outline: none;
+}
+
+#jug-ai-admin-root .jug-dash-empty-card:hover {
+  border-color: #555 !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+#jug-ai-admin-root .jug-dash-empty-plus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #444;
+  color: #888;
+  margin-bottom: 4px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+#jug-ai-admin-root .jug-dash-empty-card:hover .jug-dash-empty-plus {
+  border-color: #666;
+  color: #bbb;
+}
+
+#jug-ai-admin-root .jug-dash-empty-label {
+  font-size: 14px;
+  color: #888;
+}
+
+#jug-ai-admin-root .jug-dash-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f0f0f0;
+}
+
+#jug-ai-admin-root .jug-dash-empty-hint {
+  font-size: 13px;
+  color: #666;
+}
+
+/* ── Responsive adjustments for header layout ── */
+@media (max-width: 768px) {
+  #jug-ai-admin-root {
+    --jug-shell-pad: 16px;
+  }
+
+  .jug-ai-header-inner {
+    padding: 12px var(--jug-shell-pad);
+    height: auto;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .jug-ai-header-left {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .jug-ai-header-nav {
+    gap: 2px;
+  }
+
+  .jug-ai-header-nav a {
+    padding: 4px 10px;
+    font-size: 13px;
+  }
+
+  .jug-ai-header-right {
+    gap: 8px;
+  }
+
+  .jug-ai-header-icon-link span,
+  .jug-ai-header-icon-link {
+    font-size: 0;
+    gap: 0;
+    padding: 6px;
+  }
+
+  .jug-ai-header-icon-link svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .jug-ai-footer-inner {
+    padding: 16px var(--jug-shell-pad);
+  }
+
+  .jug-ai-main {
+    padding: 16px var(--jug-shell-pad);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   DASHBOARD — Site / Bot card (matches app UI)
+   ═══════════════════════════════════════════ */
+
+#jug-ai-admin-root .jug-site-card {
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: box-shadow 0.15s, border-color 0.15s;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+}
+
+#jug-ai-admin-root .jug-site-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  border-color: #4a4a4a;
+}
+
+#jug-ai-admin-root .jug-site-card.active {
+  border-color: #4ade80;
+  box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.35);
+}
+
+/* Top row */
+#jug-ai-admin-root .jug-site-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+#jug-ai-admin-root .jug-site-card-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: #e5e5e5;
+}
+
+#jug-ai-admin-root .jug-site-card-icon img {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+#jug-ai-admin-root .jug-site-card-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+#jug-ai-admin-root .jug-site-card-hostname {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+}
+
+#jug-ai-admin-root .jug-site-card-url {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#jug-ai-admin-root .jug-site-card-top-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#jug-ai-admin-root .jug-site-card-pages-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #2a2a2a;
+  color: #ccc;
+  border: 1px solid #3a3a3a;
+}
+
+/* Delete: hidden until card hover */
+#jug-ai-admin-root .jug-site-card-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #f87171;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+#jug-ai-admin-root .jug-site-card:hover .jug-site-card-delete {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#jug-ai-admin-root .jug-site-card-delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* Edit + Embed row */
+#jug-ai-admin-root .jug-site-card-row-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+#jug-ai-admin-root .jug-site-card-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  background: #141414;
+  color: #e5e5e5;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+#jug-ai-admin-root .jug-site-card-btn:hover {
+  background: #222;
+  border-color: #555;
+}
+
+/* Preview box */
+#jug-ai-admin-root .jug-site-card-preview-box {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+#jug-ai-admin-root .jug-site-card-preview-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+#jug-ai-admin-root .jug-site-card-preview-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+#jug-ai-admin-root .jug-site-card-preview-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  background: #1a1a1a;
+  color: #f0f0f0;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+#jug-ai-admin-root .jug-site-card-preview-btn:hover {
+  background: #252525;
+  border-color: #555;
+}
+
+#jug-ai-admin-root .jug-site-card-preview-btn-agent {
+  background: #e5e5e5;
+  color: #111;
+  border-color: #e5e5e5;
+}
+
+#jug-ai-admin-root .jug-site-card-preview-btn-agent:hover {
+  background: #fff;
+  border-color: #fff;
+}
+
+/* 2x2 grid */
+#jug-ai-admin-root .jug-site-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+#jug-ai-admin-root .jug-site-card-grid-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: #141414;
+  color: #ddd;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  line-height: 1.2;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+#jug-ai-admin-root .jug-site-card-grid-btn:hover {
+  background: #222;
+  border-color: #444;
+}
+
+#jug-ai-admin-root .jug-site-card-grid-btn svg {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+#jug-ai-admin-root .jug-site-card-footer {
+  margin: 0;
+  font-size: 11px;
+  color: #666;
+}
+
+/* ═══════════════════════════════════════════
+   MODALS — Dark Theme Overrides
+   ═══════════════════════════════════════════ */
+
+/* Larger modal sizes */
+.jug-ai-modal-md {
+  width: 640px;
+  max-width: 95vw;
+}
+
+.jug-ai-modal-lg {
+  width: 900px;
+  max-width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.jug-ai-modal-xl {
+  width: 1080px;
+  max-width: 96vw;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Dark modal styling */
+#jug-ai-admin-root .jug-ai-modal {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  color: #f0f0f0;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+#jug-ai-admin-root .jug-ai-modal-header {
+  border-bottom: 1px solid #2a2a2a;
+  padding-bottom: 16px;
+}
+
+#jug-ai-admin-root .jug-ai-modal-header h3 {
+  color: #fff;
+}
+
+#jug-ai-admin-root .jug-ai-modal-close {
+  color: #666;
+}
+
+#jug-ai-admin-root .jug-ai-modal-close:hover {
+  color: #fff;
+}
+
+#jug-ai-admin-root .jug-ai-modal-actions {
+  border-top: 1px solid #2a2a2a;
+  padding-top: 16px;
+}
+
+/* Dark overrides for fields inside modals */
+#jug-ai-admin-root .jug-ai-modal .jug-ai-field label {
+  color: #ccc;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-field input[type="text"],
+#jug-ai-admin-root .jug-ai-modal .jug-ai-field input[type="url"],
+#jug-ai-admin-root .jug-ai-modal .jug-ai-field select,
+#jug-ai-admin-root .jug-ai-modal .jug-ai-select {
+  background: #1a1a1a;
+  border-color: #333;
+  color: #f0f0f0;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-field input:focus,
+#jug-ai-admin-root .jug-ai-modal .jug-ai-field select:focus {
+  border-color: #555;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-textarea {
+  background: #1a1a1a;
+  border-color: #333;
+  color: #f0f0f0;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-textarea:focus {
+  border-color: #555;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-btn-primary {
+  background: #22c55e;
+  color: #000;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-btn-primary:hover {
+  background: #4ade80;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-btn-secondary {
+  background: #1a1a1a;
+  border-color: #333;
+  color: #ccc;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-btn-secondary:hover {
+  background: #222;
+  color: #fff;
+}
+
+/* ── Edit Bot Modal — Two-panel layout ── */
+.jug-edit-panels {
+  display: flex;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.jug-edit-left {
+  width: 260px;
+  flex-shrink: 0;
+  padding: 20px 28px;
+  border-right: 1px solid #2a2a2a;
+}
+
+.jug-edit-right {
+  flex: 1;
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Template chips in dark modal */
+#jug-ai-admin-root .jug-ai-modal .jug-step-template-chip {
+  background: #1a1a1a;
+  border-color: #333;
+  color: #888;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-step-template-chip:hover {
+  background: rgba(74, 222, 128, 0.08);
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+/* Prompt toolbar in dark modal */
+#jug-ai-admin-root .jug-ai-modal .jug-prompt-toolbar {
+  margin-bottom: 8px;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-prompt-action-link {
+  color: #888;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-prompt-action-link:hover:not(:disabled) {
+  color: #4ade80;
+}
+
+/* ── Embed Modal dark overrides ── */
+#jug-ai-admin-root .jug-ai-modal .jug-embed-type-toggle {
+  padding: 0 28px;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-embed-type-label {
+  color: #ccc;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-embed-type-btn {
+  background: #1a1a1a;
+  border-color: #333;
+  color: #888;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-embed-type-btn:hover {
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-embed-type-btn.active {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #000;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-embed-stack {
+  margin: 0 28px;
+  border-color: #2a2a2a;
+  background: #141414;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-embed-info-title {
+  color: #f0f0f0;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-embed-reference-label {
+  color: #f0f0f0;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-embed-inline-code {
+  background: #0a0a0a;
+  color: #f0f0f0;
+}
+
+/* ═══════════════════════════════════════════
+   CHAT LOGS MODAL — Dark Theme
+   ═══════════════════════════════════════════ */
+
+/* Tabs */
+.jug-logs-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 0 28px;
+  flex-shrink: 0;
+}
+
+.jug-logs-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+
+.jug-logs-tab:hover {
+  color: #f0f0f0;
+}
+
+.jug-logs-tab.active {
+  color: #4ade80;
+  border-bottom-color: #4ade80;
+}
+
+.jug-logs-tab svg {
+  opacity: 0.7;
+}
+
+.jug-logs-tab.active svg {
+  opacity: 1;
+}
+
+.jug-logs-tab-badge {
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  color: #888;
+}
+
+/* Conversations layout */
+.jug-logs-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.jug-logs-sessions {
+  width: 320px;
+  flex-shrink: 0;
+  border-right: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.jug-logs-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 16px 24px;
+}
+
+.jug-logs-search {
+  padding: 12px 16px 8px;
+}
+
+.jug-logs-search input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #f0f0f0;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.jug-logs-search input:focus {
+  border-color: #555;
+}
+
+.jug-logs-search input::placeholder {
+  color: #555;
+}
+
+.jug-logs-filter-row {
+  display: flex;
+  gap: 8px;
+  padding: 4px 16px 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.jug-logs-filter-row label {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.jug-logs-filter-row input[type="date"] {
+  padding: 5px 8px;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #f0f0f0;
+  font-size: 12px;
+  outline: none;
+}
+
+.jug-logs-filter-row input[type="date"]:focus {
+  border-color: #555;
+}
+
+.jug-logs-session-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.jug-logs-session-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid #1e1e1e;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.jug-logs-session-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.jug-logs-session-item.active {
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.jug-logs-session-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.jug-logs-session-msg {
+  font-size: 13px;
+  font-weight: 500;
+  color: #f0f0f0;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.jug-logs-session-count {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+}
+
+.jug-logs-session-time {
+  font-size: 12px;
+  color: #555;
+}
+
+/* Messages in chat logs */
+.jug-logs-exchange {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-message {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-message-user {
+  background: #22c55e;
+  color: #000;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-message-assistant {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  color: #f0f0f0;
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-message-role {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: inherit;
+  opacity: 0.6;
+  margin-bottom: 2px;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-message-time {
+  font-size: 10px;
+  opacity: 0.5;
+  margin-top: 2px;
+}
+
+/* ── Analytics ── */
+.jug-logs-analytics {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
+}
+
+.jug-stats-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-stat-card {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-stat-value {
+  color: #4ade80;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-stat-label {
+  color: #888;
+}
+
+.jug-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-chart-card {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-chart-card h4 {
+  color: #f0f0f0;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+/* ── Pure CSS Bar Chart ── */
+.jug-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  height: 180px;
+  padding: 8px 4px;
+}
+
+.jug-chart-bar-col {
+  flex: 1;
+  min-width: 0;
+  max-width: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  height: 100%;
+}
+
+.jug-chart-bar-val {
+  font-size: 10px;
+  color: #888;
+  line-height: 1;
+}
+
+.jug-chart-bar {
+  width: 100%;
+  min-width: 6px;
+  border-radius: 3px 3px 0 0;
+  background: #4f46e5;
+  transition: height 0.3s ease;
+}
+
+.jug-chart-bar-label {
+  font-size: 9px;
+  color: #666;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  line-height: 1;
+}
+
+.jug-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  border: 1px dashed #2a2a2a;
+  border-radius: 8px;
+  color: #555;
+  font-size: 13px;
+}
+
+/* ── Pure SVG Donut Chart ── */
+.jug-chart-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.jug-chart-donut-legend {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.jug-chart-donut-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.jug-chart-donut-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.jug-chart-donut-label {
+  color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jug-chart-donut-value {
+  margin-left: auto;
+  font-weight: 600;
+  color: #f0f0f0;
+  white-space: nowrap;
+}
+
+/* ── Responsive for modals ── */
+@media (max-width: 768px) {
+  .jug-edit-panels {
+    flex-direction: column;
+  }
+
+  .jug-edit-left {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .jug-logs-sessions {
+    width: 100%;
+    border-right: none;
+  }
+
+  .jug-logs-sessions-hidden-mobile {
+    display: none;
+  }
+
+  .jug-logs-messages-hidden-mobile {
+    display: none;
+  }
+
+  .jug-charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jug-chart-donut-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
 }

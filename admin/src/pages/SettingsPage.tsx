@@ -3,11 +3,7 @@ import api from '../api';
 import type { Bot, PluginSettings } from '../types';
 import Spinner from '../components/shared/Spinner';
 
-interface Props {
-  onLogout: () => void;
-}
-
-export default function SettingsPage({ onLogout }: Props) {
+export default function SettingsPage() {
   const [settings, setSettings] = useState<PluginSettings>(window.jugAiConfig.settings);
   const [bots, setBots] = useState<Bot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,12 +33,6 @@ export default function SettingsPage({ onLogout }: Props) {
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleLogout = async () => {
-    if (!window.confirm('Are you sure you want to log out?')) return;
-    await api.post('auth/logout');
-    onLogout();
   };
 
   if (loading) {
@@ -150,13 +140,6 @@ export default function SettingsPage({ onLogout }: Props) {
         </button>
 
         {message && <p className={message.startsWith('Error') ? 'jug-ai-error' : 'jug-ai-success'}>{message}</p>}
-      </div>
-
-      <div className="jug-ai-card">
-        <h3>Account</h3>
-        <button type="button" className="jug-ai-btn-danger" onClick={handleLogout}>
-          Log Out
-        </button>
       </div>
 
       <div className="jug-ai-card">

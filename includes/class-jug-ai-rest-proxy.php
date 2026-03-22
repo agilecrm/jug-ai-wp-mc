@@ -47,11 +47,29 @@ class Jug_AI_Rest_Proxy {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'create_bot' ),
-				'permission_callback' => array( $this, 'check_authenticated' ),
+				'permission_callback' => array( $this, 'check_admin' ),
 			),
 		) );
 
+		// Static /bots/* routes must be registered before /bots/(uuid) so "generate-prompt" is not captured as a UUID.
+		register_rest_route( self::NAMESPACE, '/bots/generate-prompt', array(
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'generate_prompt' ),
+			'permission_callback' => array( $this, 'check_admin' ),
+		) );
+
+		register_rest_route( self::NAMESPACE, '/bots/detect-cors', array(
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'detect_cors' ),
+			'permission_callback' => array( $this, 'check_authenticated' ),
+		) );
+
 		register_rest_route( self::NAMESPACE, '/bots/(?P<uuid>[a-zA-Z0-9\-]+)', array(
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_bot' ),
+				'permission_callback' => array( $this, 'check_authenticated' ),
+			),
 			array(
 				'methods'             => 'PUT',
 				'callback'            => array( $this, 'update_bot' ),
@@ -64,42 +82,37 @@ class Jug_AI_Rest_Proxy {
 			),
 		) );
 
-		register_rest_route( self::NAMESPACE, '/bots/generate-prompt', array(
-			'methods'             => 'POST',
-			'callback'            => array( $this, 'generate_prompt' ),
-			'permission_callback' => array( $this, 'check_authenticated' ),
-		) );
-
-		register_rest_route( self::NAMESPACE, '/bots/detect-cors', array(
-			'methods'             => 'POST',
-			'callback'            => array( $this, 'detect_cors' ),
-			'permission_callback' => array( $this, 'check_authenticated' ),
+		// ── Chat ──
+		register_rest_route( self::NAMESPACE, '/chat/stream-url', array(
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'chat_stream_url' ),
+			'permission_callback' => array( $this, 'check_admin' ),
 		) );
 
 		// ── Scrape ──
 		register_rest_route( self::NAMESPACE, '/scrape/discover', array(
 			'methods'             => 'POST',
 			'callback'            => array( $this, 'scrape_discover' ),
-			'permission_callback' => array( $this, 'check_authenticated' ),
+			'permission_callback' => array( $this, 'check_admin' ),
 		) );
 
 		register_rest_route( self::NAMESPACE, '/scrape/analyze', array(
 			'methods'             => 'POST',
 			'callback'            => array( $this, 'scrape_analyze' ),
-			'permission_callback' => array( $this, 'check_authenticated' ),
+			'permission_callback' => array( $this, 'check_admin' ),
 		) );
 
 		register_rest_route( self::NAMESPACE, '/scrape/stream-url', array(
 			'methods'             => 'GET',
 			'callback'            => array( $this, 'scrape_stream_url' ),
-			'permission_callback' => array( $this, 'check_authenticated' ),
+			'permission_callback' => array( $this, 'check_admin' ),
 		) );
 
 		// ── Training ──
-		register_rest_route( self::NAMESPACE, '/training/stream-url', array(
+		register_rest_route( self::NAMESPACE, '/training/site/(?P<site_uuid>[a-zA-Z0-9\-]+)/stream-url', array(
 			'methods'             => 'GET',
 			'callback'            => array( $this, 'training_stream_url' ),
-			'permission_callback' => array( $this, 'check_authenticated' ),
+			'permission_callback' => array( $this, 'check_admin' ),
 		) );
 
 		register_rest_route( self::NAMESPACE, '/training/(?P<uuid>[a-zA-Z0-9\-]+)/text', array(
@@ -203,7 +216,31 @@ class Jug_AI_Rest_Proxy {
 			return $this->respond( $result );
 		}
 
-		return new WP_REST_Response( array( 'status' => 'verified' ), 200 );
+		$req_name  = sanitize_text_field( $request->get_param( 'name' ) );
+		$req_email = sanitize_text_field( $request->get_param( 'contact' ) );
+
+		$name  = $req_name;
+		$email = $req_email;
+
+		$profile = Jug_AI_Api_Client::get_profile();
+		if ( ! is_wp_error( $profile ) ) {
+			if ( ! empty( $profile['name'] ) ) {
+				$name = sanitize_text_field( $profile['name'] );
+			}
+			if ( ! empty( $profile['email'] ) ) {
+				$email = sanitize_email( $profile['email'] );
+			}
+		}
+
+		if ( ! empty( $name ) || ! empty( $email ) ) {
+			Jug_AI_Settings::set_user_info( $name, $email );
+		}
+
+		return new WP_REST_Response( array(
+			'status' => 'verified',
+			'name'   => $name,
+			'email'  => $email,
+		), 200 );
 	}
 
 	public function auth_logout( WP_REST_Request $request ) {
@@ -220,6 +257,11 @@ class Jug_AI_Rest_Proxy {
 	public function create_bot( WP_REST_Request $request ) {
 		$body = $request->get_json_params();
 		return $this->respond( Jug_AI_Api_Client::create_bot( $body ) );
+	}
+
+	public function get_bot( WP_REST_Request $request ) {
+		$uuid = sanitize_text_field( $request->get_param( 'uuid' ) );
+		return $this->respond( Jug_AI_Api_Client::get_bot( $uuid ) );
 	}
 
 	public function update_bot( WP_REST_Request $request ) {
@@ -243,6 +285,18 @@ class Jug_AI_Rest_Proxy {
 		return $this->respond( Jug_AI_Api_Client::detect_cors( $url ) );
 	}
 
+	// ── Chat Callbacks ──
+
+	public function chat_stream_url( WP_REST_Request $request ) {
+		$token    = Jug_AI_Settings::get_token();
+		$base_url = defined( 'JUG_AI_API_BASE' ) ? JUG_AI_API_BASE : 'https://app.jug.ai/api';
+
+		return new WP_REST_Response( array(
+			'url'   => $base_url . '/chat/stream',
+			'token' => $token ?: '',
+		), 200 );
+	}
+
 	// ── Scrape Callbacks ──
 
 	public function scrape_discover( WP_REST_Request $request ) {
@@ -256,34 +310,25 @@ class Jug_AI_Rest_Proxy {
 	}
 
 	public function scrape_stream_url( WP_REST_Request $request ) {
-		$token = Jug_AI_Settings::get_token();
-
-		if ( ! $token ) {
-			return new WP_REST_Response( array( 'error' => 'Not authenticated.' ), 401 );
-		}
-
+		$token    = Jug_AI_Settings::get_token();
 		$base_url = defined( 'JUG_AI_API_BASE' ) ? JUG_AI_API_BASE : 'https://app.jug.ai/api';
 
 		return new WP_REST_Response( array(
 			'url'   => $base_url . '/scrape/stream',
-			'token' => $token,
+			'token' => $token ?: '',
 		), 200 );
 	}
 
 	// ── Training Callbacks ──
 
 	public function training_stream_url( WP_REST_Request $request ) {
-		$token = Jug_AI_Settings::get_token();
-
-		if ( ! $token ) {
-			return new WP_REST_Response( array( 'error' => 'Not authenticated.' ), 401 );
-		}
-
-		$base_url = defined( 'JUG_AI_API_BASE' ) ? JUG_AI_API_BASE : 'https://app.jug.ai/api';
+		$token     = Jug_AI_Settings::get_token();
+		$base_url  = defined( 'JUG_AI_API_BASE' ) ? JUG_AI_API_BASE : 'https://app.jug.ai/api';
+		$site_uuid = sanitize_text_field( $request->get_param( 'site_uuid' ) );
 
 		return new WP_REST_Response( array(
-			'url'   => $base_url . '/training/stream',
-			'token' => $token,
+			'url'   => $base_url . '/training/site/' . $site_uuid . '/stream',
+			'token' => $token ?: '',
 		), 200 );
 	}
 

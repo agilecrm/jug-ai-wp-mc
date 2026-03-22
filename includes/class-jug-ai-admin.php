@@ -56,13 +56,28 @@ class Jug_AI_Admin {
 			$version
 		);
 
+		$user_info   = Jug_AI_Settings::get_user_info();
+		$jug_session = Jug_AI_Settings::is_authenticated();
+
+		/**
+		 * URL suggested for onboarding / scraping (often public https).
+		 * Default: this WordPress site. Override in dev, e.g. attio.com, via filter:
+		 * add_filter( 'jug_ai_default_training_url', fn () => 'https://attio.com' );
+		 */
+		$default_training_url = apply_filters( 'jug_ai_default_training_url', home_url() );
+
 		wp_localize_script( 'jug-ai-admin', 'jugAiConfig', array(
 			'restUrl'    => esc_url_raw( rest_url( 'jug-ai/v1/' ) ),
 			'nonce'      => wp_create_nonce( 'wp_rest' ),
 			'siteUrl'    => esc_url( home_url() ),
+			'defaultTrainingUrl' => esc_url_raw( $default_training_url ),
 			'siteName'   => get_bloginfo( 'name' ),
-			'isLoggedIn' => Jug_AI_Settings::is_authenticated(),
+			'isLoggedIn' => $jug_session,
 			'settings'   => Jug_AI_Settings::get_settings(),
+			// Avoid showing a Jug name when the session token is missing (stale options after logout / failed decrypt).
+			'userName'   => $jug_session ? $user_info['name'] : '',
+			'userEmail'  => $jug_session ? $user_info['email'] : '',
+			'widgetBase' => esc_url_raw( untrailingslashit( JUG_AI_WIDGET_BASE ) ),
 		) );
 	}
 }

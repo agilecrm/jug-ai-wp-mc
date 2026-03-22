@@ -13,26 +13,33 @@ class Jug_AI_Api_Client {
 		return JUG_AI_API_BASE;
 	}
 
-	private static function auth_headers() {
-		$token = Jug_AI_Settings::get_token();
+	/**
+	 * JSON headers for Jug API. When $with_bearer is false, omit Authorization (required for /auth/login, /auth/signup, /auth/verify).
+	 *
+	 * @param bool $with_bearer Whether to attach stored JWT when present.
+	 */
+	private static function json_headers( $with_bearer = true ) {
 		$headers = array(
 			'Content-Type' => 'application/json',
 			'Accept'       => 'application/json',
 		);
 
-		if ( $token ) {
-			$headers['Authorization'] = 'Bearer ' . $token;
+		if ( $with_bearer ) {
+			$token = Jug_AI_Settings::get_token();
+			if ( $token ) {
+				$headers['Authorization'] = 'Bearer ' . $token;
+			}
 		}
 
 		return $headers;
 	}
 
-	private static function request( $method, $endpoint, $body = null ) {
+	private static function request( $method, $endpoint, $body = null, $anonymous = false ) {
 		$url  = self::get_base_url() . $endpoint;
 		$args = array(
 			'method'  => $method,
-			'headers' => self::auth_headers(),
-			'timeout' => 30,
+			'headers' => self::json_headers( ! $anonymous ),
+			'timeout' => 60,
 		);
 
 		if ( null !== $body ) {
@@ -61,8 +68,8 @@ class Jug_AI_Api_Client {
 		return self::request( 'GET', $endpoint );
 	}
 
-	private static function post( $endpoint, $body = array() ) {
-		return self::request( 'POST', $endpoint, $body );
+	private static function post( $endpoint, $body = array(), $anonymous = false ) {
+		return self::request( 'POST', $endpoint, $body, $anonymous );
 	}
 
 	private static function put( $endpoint, $body = array() ) {
@@ -76,21 +83,21 @@ class Jug_AI_Api_Client {
 	// ── Auth ──
 
 	public static function login( $contact ) {
-		return self::post( '/auth/login', array( 'contact' => $contact ) );
+		return self::post( '/auth/login', array( 'contact' => $contact ), true );
 	}
 
 	public static function signup( $name, $contact ) {
 		return self::post( '/auth/signup', array(
 			'name'    => $name,
 			'contact' => $contact,
-		) );
+		), true );
 	}
 
 	public static function verify( $otp, $enc_str ) {
 		$result = self::post( '/auth/verify', array(
 			'otp'     => $otp,
 			'enc_str' => $enc_str,
-		) );
+		), true );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -107,10 +114,18 @@ class Jug_AI_Api_Client {
 		return $result;
 	}
 
+	public static function get_profile() {
+		return self::get( '/profile' );
+	}
+
 	// ── Bots ──
 
 	public static function get_bots() {
 		return self::get( '/bots' );
+	}
+
+	public static function get_bot( $uuid ) {
+		return self::get( '/bots/' . sanitize_text_field( $uuid ) );
 	}
 
 	public static function create_bot( $data ) {

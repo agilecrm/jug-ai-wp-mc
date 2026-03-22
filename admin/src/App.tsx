@@ -1,18 +1,35 @@
-import { useState, useEffect } from '@wordpress/element';
-import LoginPage from './pages/LoginPage';
+import { useState, useEffect, useCallback } from '@wordpress/element';
+import api from './api';
+import Header from './components/shared/Header';
+import Footer from './components/shared/Footer';
+import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage';
-import OnboardingPage from './pages/OnboardingPage';
 import ConversationsPage from './pages/ConversationsPage';
 import SettingsPage from './pages/SettingsPage';
+import AuthModal from './pages/AuthModal';
+import OnboardingModal from './components/onboarding/OnboardingModal';
 
 function getRoute(): string {
   const hash = window.location.hash.replace('#', '') || '/';
   return hash;
 }
 
+function loadUser(): { name: string; email: string } | null {
+  const cfg = window.jugAiConfig;
+  if (cfg?.userName || cfg?.userEmail) {
+    return { name: cfg.userName || '', email: cfg.userEmail || '' };
+  }
+  return null;
+}
+
 export default function App() {
   const [route, setRoute] = useState(getRoute());
-  const [isLoggedIn, setIsLoggedIn] = useState(window.jugAiConfig.isLoggedIn);
+  const [isLoggedIn, setIsLoggedIn] = useState(window.jugAiConfig?.isLoggedIn || false);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(loadUser);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [onboardingUrl, setOnboardingUrl] = useState('');
+  const [showHome, setShowHome] = useState(!isLoggedIn);
 
   useEffect(() => {
     const onHashChange = () => setRoute(getRoute());
@@ -20,63 +37,132 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  const navigate = (path: string) => {
-    window.location.hash = '#' + path;
+  /** WordPress REST returned 401/403 (expired nonce or lost Jug session). Open OTP modal; do not use nonexistent #/login route. */
+  useEffect(() => {
+    const onRestUnauthorized = () => {
+      setIsLoggedIn(false);
+      if (window.jugAiConfig) {
+        window.jugAiConfig.isLoggedIn = false;
+        window.jugAiConfig.userName = '';
+        window.jugAiConfig.userEmail = '';
+      }
+      setUser(null);
+      setShowAuth(true);
+    };
+    window.addEventListener('jug-ai:rest-unauthorized', onRestUnauthorized);
+    return () => window.removeEventListener('jug-ai:rest-unauthorized', onRestUnauthorized);
+  }, []);
+
+  const handleGetStarted = (url: string) => {
+    setOnboardingUrl(url);
+    setShowOnboarding(true);
   };
 
-  const handleLogin = () => {
+  const openOnboarding = () => {
+    setOnboardingUrl('');
+    setShowOnboarding(true);
+  };
+
+  const closeOnboarding = () => {
+    setShowOnboarding(false);
+    setOnboardingUrl('');
+  };
+
+  const handleAuthRequired = useCallback(() => {
+    setShowAuth(true);
+  }, []);
+
+  const handleLogin = useCallback((name: string, email: string) => {
+    setShowAuth(false);
     setIsLoggedIn(true);
-    navigate('/dashboard');
-  };
+    setUser({ name, email });
+    setShowHome(false);
+    window.jugAiConfig.isLoggedIn = true;
+    window.jugAiConfig.userName = name;
+    window.jugAiConfig.userEmail = email;
+    closeOnboarding();
+    window.location.hash = '#/dashboard';
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(async () => {
+    try {
+      await api.post('auth/logout');
+    } catch (_) { /* proceed even if request fails */ }
     setIsLoggedIn(false);
-    navigate('/login');
-  };
+    setUser(null);
+    setShowHome(true);
+    window.jugAiConfig.isLoggedIn = false;
+    window.jugAiConfig.userName = '';
+    window.jugAiConfig.userEmail = '';
+    window.location.hash = '#/';
+  }, []);
 
-  if (!isLoggedIn && !route.startsWith('/login')) {
-    return <LoginPage onLogin={handleLogin} />;
+  const handleCloseAuth = useCallback(() => {
+    setShowAuth(false);
+  }, []);
+
+  if (showHome && !isLoggedIn) {
+    return (
+      <div className="jug-ai-app jug-ai-app-header-layout">
+        <Header
+          isLoggedIn={false}
+          user={null}
+          onLoginClick={handleAuthRequired}
+          onLogout={handleLogout}
+        />
+        <HomePage onGetStarted={handleGetStarted} />
+        <Footer />
+        {showOnboarding && (
+          <OnboardingModal
+            initialUrl={onboardingUrl}
+            onClose={closeOnboarding}
+            onAuthRequired={handleAuthRequired}
+          />
+        )}
+        {showAuth && (
+          <AuthModal onLogin={handleLogin} onClose={handleCloseAuth} asModal />
+        )}
+      </div>
+    );
   }
 
-  const showSidebar = isLoggedIn && !route.startsWith('/login');
-
   const renderPage = () => {
-    if (route.startsWith('/onboarding')) return <OnboardingPage />;
     if (route.startsWith('/conversations')) return <ConversationsPage route={route} />;
-    if (route.startsWith('/settings')) return <SettingsPage onLogout={handleLogout} />;
-    if (route.startsWith('/login')) return <LoginPage onLogin={handleLogin} />;
-    return <DashboardPage />;
+    if (route.startsWith('/settings')) return <SettingsPage />;
+    return (
+      <DashboardPage
+        onOpenOnboarding={openOnboarding}
+        onConnectJug={() => setShowAuth(true)}
+      />
+    );
   };
 
   return (
-    <div className="jug-ai-app">
-      {showSidebar && (
-        <nav className="jug-ai-sidebar">
-          <div className="jug-ai-sidebar-brand">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            <span>Jug.ai</span>
-          </div>
-          <ul className="jug-ai-sidebar-nav">
-            <li className={route.startsWith('/dashboard') || route === '/' ? 'active' : ''}>
-              <a href="#/dashboard">Dashboard</a>
-            </li>
-            <li className={route.startsWith('/onboarding') ? 'active' : ''}>
-              <a href="#/onboarding">Onboarding</a>
-            </li>
-            <li className={route.startsWith('/conversations') ? 'active' : ''}>
-              <a href="#/conversations">Conversations</a>
-            </li>
-            <li className={route.startsWith('/settings') ? 'active' : ''}>
-              <a href="#/settings">Settings</a>
-            </li>
-          </ul>
-        </nav>
-      )}
-      <main className={showSidebar ? 'jug-ai-main with-sidebar' : 'jug-ai-main'}>
+    <div className="jug-ai-app jug-ai-app-header-layout">
+      <Header
+        isLoggedIn={isLoggedIn}
+        user={user}
+        onLoginClick={handleAuthRequired}
+        onLogout={handleLogout}
+      />
+
+      <main className="jug-ai-main">
         {renderPage()}
       </main>
+
+      <Footer />
+
+      {showOnboarding && (
+        <OnboardingModal
+          initialUrl={onboardingUrl}
+          onClose={closeOnboarding}
+          onAuthRequired={handleAuthRequired}
+        />
+      )}
+
+      {showAuth && (
+        <AuthModal onLogin={handleLogin} onClose={handleCloseAuth} asModal />
+      )}
     </div>
   );
 }

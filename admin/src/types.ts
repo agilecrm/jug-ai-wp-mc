@@ -1,7 +1,8 @@
 export interface Bot {
   uuid: string;
   name: string;
-  site_url: string;
+  /** May be missing on some API payloads */
+  site_url?: string;
   system_prompt: string;
   status: string;
   widget_type: string;
@@ -9,6 +10,13 @@ export interface Bot {
   session_count?: number;
   created_at?: string;
   updated_at?: string;
+  /** Pages scraped / indexed for training (from API when available) */
+  page_count?: number;
+  /** Unix seconds when last trained */
+  trained_at?: number | null;
+  training_status?: string;
+  /** Site training UUID if different from bot (for training APIs) */
+  site_uuid?: string;
 }
 
 export interface Session {
@@ -49,9 +57,15 @@ declare global {
       restUrl: string;
       nonce: string;
       siteUrl: string;
+      /** Prefills onboarding; default is WP home URL, override via `jug_ai_default_training_url` filter. */
+      defaultTrainingUrl?: string;
       siteName: string;
       isLoggedIn: boolean;
+      userName: string;
+      userEmail: string;
       settings: PluginSettings;
+      /** Matches JUG_AI_WIDGET_BASE — script URLs for chat.min.js / agent.min.js */
+      widgetBase: string;
     };
   }
 }

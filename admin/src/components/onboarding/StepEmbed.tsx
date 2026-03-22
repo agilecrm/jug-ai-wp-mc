@@ -1,20 +1,37 @@
-import { useState } from '@wordpress/element';
+import { useMemo, useState } from '@wordpress/element';
+import { useOnboarding } from '../../context/OnboardingContext';
 import api from '../../api';
 import CodeBlock from '../shared/CodeBlock';
 import Spinner from '../shared/Spinner';
 
-interface Props {
-  botUuid: string;
-  onBack: () => void;
+function getWidgetBase(): string {
+  const raw = window.jugAiConfig.widgetBase || 'https://app.jug.ai';
+  return raw.replace(/\/$/, '');
 }
 
-export default function StepEmbed({ botUuid, onBack }: Props) {
+export default function StepEmbed() {
+  const { botUuid, close, completeStep, onAuthRequired } = useOnboarding();
+
   const [widgetType, setWidgetType] = useState<'chatbot' | 'agent'>('chatbot');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
+  const widgetBase = useMemo(() => getWidgetBase(), []);
+
+  const embedCode = useMemo(() => {
+    if (widgetType === 'agent') {
+      return `<script id="jug-ai-agent" src="${widgetBase}/agent.min.js" data-bot="${botUuid}"></script>`;
+    }
+    return `<script id="jug-ai-chat" src="${widgetBase}/chat.min.js" data-bot="${botUuid}"></script>`;
+  }, [widgetType, widgetBase, botUuid]);
+
   const handleActivate = async () => {
+    if (!window.jugAiConfig.isLoggedIn) {
+      onAuthRequired();
+      return;
+    }
+
     setSaving(true);
     setError('');
 
@@ -25,6 +42,7 @@ export default function StepEmbed({ botUuid, onBack }: Props) {
         widget_enabled: true,
       });
       setSaved(true);
+      completeStep(4);
     } catch (err: any) {
       setError(err.message || 'Failed to save settings.');
     } finally {
@@ -32,80 +50,93 @@ export default function StepEmbed({ botUuid, onBack }: Props) {
     }
   };
 
-  const scriptSrc = widgetType === 'agent'
-    ? 'https://app.jug.ai/agent.min.js'
-    : 'https://app.jug.ai/chat.min.js';
-
-  const embedCode = `<script src="${scriptSrc}" data-bot="${botUuid}"></script>`;
+  const handleFinish = () => {
+    close();
+    window.location.hash = '#/dashboard';
+    window.location.reload();
+  };
 
   return (
-    <div className="jug-ai-step">
-      <h3>Embed Your Widget</h3>
-
-      <div className="jug-ai-field">
-        <label>Widget Type</label>
-        <div className="jug-ai-radio-group">
-          <label>
-            <input
-              type="radio"
-              name="embed_type"
-              value="chatbot"
-              checked={widgetType === 'chatbot'}
-              onChange={() => setWidgetType('chatbot')}
-            />
-            Chatbot
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="embed_type"
-              value="agent"
-              checked={widgetType === 'agent'}
-              onChange={() => setWidgetType('agent')}
-            />
-            Agent
-          </label>
+    <div className="jug-step-layout">
+      <div className="jug-step-body">
+        <div className="jug-step-header">
+          <h2>Add to your website</h2>
+          <span className="jug-step-badge">WordPress</span>
         </div>
+        <p className="jug-step-subtitle">
+          Choose the widget type. After you activate, the plugin injects the same script on your
+          site via <code className="jug-embed-inline-code">wp_footer</code>.
+        </p>
+
+        <div className="jug-embed-type-toggle">
+          <span className="jug-embed-type-label">Widget type</span>
+          <div className="jug-embed-type-buttons">
+            <button
+              type="button"
+              className={`jug-embed-type-btn ${widgetType === 'chatbot' ? 'active' : ''}`}
+              onClick={() => setWidgetType('chatbot')}
+            >
+              💬 Chatbot
+            </button>
+            <button
+              type="button"
+              className={`jug-embed-type-btn ${widgetType === 'agent' ? 'active' : ''}`}
+              onClick={() => setWidgetType('agent')}
+            >
+              ⚡ Agent
+            </button>
+          </div>
+        </div>
+
+        <div className="jug-embed-stack">
+          <div className="jug-embed-info jug-ai-success-box">
+            <p className="jug-embed-info-title">Auto-injected by this plugin</p>
+            <p className="jug-ai-muted jug-embed-info-text">
+              You do not need to paste code into your theme. Click &quot;Activate Widget&quot; and
+              visitors will see the widget on your site (according to your display settings).
+            </p>
+          </div>
+
+          <div className="jug-embed-reference">
+            <p className="jug-embed-reference-label">Reference — script tag the plugin adds</p>
+            <p className="jug-ai-muted jug-embed-reference-hint">
+              For support or custom setups, this matches what{' '}
+              <code className="jug-embed-inline-code">wp_footer</code> outputs.
+            </p>
+            <CodeBlock code={embedCode} language="html" />
+          </div>
+
+          <p className="jug-embed-footnote jug-ai-muted">
+            Themes that remove <code className="jug-embed-inline-code">wp_footer</code> may not
+            show the widget until the footer hook is restored.
+          </p>
+        </div>
+
+        {error && <p className="jug-ai-error">{error}</p>}
+
+        {saved && (
+          <div className="jug-ai-success-box">
+            <p>🎉 Widget is now live on your site!</p>
+          </div>
+        )}
       </div>
 
-      <div className="jug-ai-card">
-        <h4>Embed Code (for external sites)</h4>
-        <CodeBlock code={embedCode} />
-      </div>
-
-      {botUuid && (
-        <div className="jug-ai-card">
-          <h4>Preview</h4>
-          <iframe
-            src={`https://app.jug.ai/preview/${botUuid}?type=${widgetType}`}
-            style={{ width: '100%', height: 500, border: '1px solid var(--jug-border)', borderRadius: 8 }}
-            title="Widget Preview"
-          />
-        </div>
-      )}
-
-      {error && <p className="jug-ai-error">{error}</p>}
-
-      {saved ? (
-        <div className="jug-ai-success-box">
-          <p>Widget is now live on your site!</p>
-          <a href="#/dashboard" className="jug-ai-btn-primary">Go to Dashboard</a>
-        </div>
-      ) : (
-        <div className="jug-ai-step-actions">
-          <button type="button" className="jug-ai-btn-secondary" onClick={onBack}>
-            Back
+      <div className="jug-step-footer">
+        {saved ? (
+          <button type="button" className="jug-ai-btn-primary" onClick={handleFinish}>
+            Go to Dashboard
           </button>
+        ) : (
           <button
             type="button"
             className="jug-ai-btn-primary"
             onClick={handleActivate}
             disabled={saving}
           >
-            {saving ? <Spinner size={18} /> : 'Activate Widget'}
+            {saving ? <><Spinner size={16} /> Saving...</> : 'Activate Widget'}
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

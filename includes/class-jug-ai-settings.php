@@ -5,10 +5,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Jug_AI_Settings {
 
-	const TOKEN_OPTION   = 'jug_ai_auth_token';
-	const USER_ID_OPTION = 'jug_ai_user_id';
+	const TOKEN_OPTION    = 'jug_ai_auth_token';
+	const USER_ID_OPTION  = 'jug_ai_user_id';
+	const USER_NAME_OPTION  = 'jug_ai_user_name';
+	const USER_EMAIL_OPTION = 'jug_ai_user_email';
 	const SETTINGS_OPTION = 'jug_ai_settings';
-	const CIPHER_METHOD  = 'aes-256-cbc';
+	const CIPHER_METHOD   = 'aes-256-cbc';
 
 	private static function get_encryption_key() {
 		return substr( hash( 'sha256', wp_salt( 'auth' ) ), 0, 32 );
@@ -67,6 +69,8 @@ class Jug_AI_Settings {
 	public static function clear_token() {
 		delete_option( self::TOKEN_OPTION );
 		delete_option( self::USER_ID_OPTION );
+		delete_option( self::USER_NAME_OPTION );
+		delete_option( self::USER_EMAIL_OPTION );
 	}
 
 	public static function get_user_id() {
@@ -75,6 +79,18 @@ class Jug_AI_Settings {
 
 	public static function set_user_id( $user_id ) {
 		update_option( self::USER_ID_OPTION, sanitize_text_field( $user_id ) );
+	}
+
+	public static function set_user_info( $name, $email ) {
+		update_option( self::USER_NAME_OPTION, sanitize_text_field( $name ) );
+		update_option( self::USER_EMAIL_OPTION, sanitize_email( $email ) );
+	}
+
+	public static function get_user_info() {
+		return array(
+			'name'  => get_option( self::USER_NAME_OPTION, '' ),
+			'email' => get_option( self::USER_EMAIL_OPTION, '' ),
+		);
 	}
 
 	public static function get_defaults() {
@@ -136,6 +152,8 @@ class Jug_AI_Settings {
 	public static function cleanup() {
 		delete_option( self::TOKEN_OPTION );
 		delete_option( self::USER_ID_OPTION );
+		delete_option( self::USER_NAME_OPTION );
+		delete_option( self::USER_EMAIL_OPTION );
 		delete_option( self::SETTINGS_OPTION );
 	}
 }
