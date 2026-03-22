@@ -37,6 +37,20 @@ class Jug_AI_Rest_Proxy {
 			'permission_callback' => array( $this, 'check_admin' ),
 		) );
 
+		// ── Profile ──
+		register_rest_route( self::NAMESPACE, '/profile', array(
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_profile' ),
+				'permission_callback' => array( $this, 'check_authenticated' ),
+			),
+			array(
+				'methods'             => 'PUT',
+				'callback'            => array( $this, 'update_profile' ),
+				'permission_callback' => array( $this, 'check_authenticated' ),
+			),
+		) );
+
 		// ── Bots ──
 		register_rest_route( self::NAMESPACE, '/bots', array(
 			array(
@@ -271,6 +285,17 @@ class Jug_AI_Rest_Proxy {
 	public function auth_logout( WP_REST_Request $request ) {
 		Jug_AI_Settings::clear_token();
 		return new WP_REST_Response( array( 'status' => 'logged_out' ), 200 );
+	}
+
+	// ── Profile Callbacks ──
+
+	public function get_profile( WP_REST_Request $request ) {
+		return $this->respond( Jug_AI_Api_Client::get_profile() );
+	}
+
+	public function update_profile( WP_REST_Request $request ) {
+		$body = $request->get_json_params();
+		return $this->respond( Jug_AI_Api_Client::update_profile( $body ) );
 	}
 
 	// ── Bot Callbacks ──

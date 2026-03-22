@@ -123,6 +123,10 @@ class Jug_AI_Api_Client {
 		return self::get( '/profile' );
 	}
 
+	public static function update_profile( $data ) {
+		return self::put( '/profile', $data );
+	}
+
 	// ── Bots ──
 
 	public static function get_bots() {

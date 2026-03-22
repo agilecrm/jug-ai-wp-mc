@@ -82,7 +82,7 @@ export default function StepScraping() {
   const {
     websiteUrl, fingerprint, siteUuid,
     companyInfo, editedSummary,
-    scrapedPages, addScrapedPage, setScrapedUrls,
+    scrapedPages, scrapedUrls, addScrapedPage, setScrapedUrls,
     setBotUuid, setAgentBotUuid, completeStep, setStep,
     onAuthRequired,
   } = useOnboarding();
@@ -207,7 +207,7 @@ export default function StepScraping() {
         return;
       }
 
-      await createBotAndSave();
+      await createBotAndSave(finalUrls);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         setError(err.message || 'Pipeline failed.');
@@ -215,7 +215,8 @@ export default function StepScraping() {
     }
   }, [websiteUrl, fingerprint, siteUuid, companyInfo, editedSummary, addScrapedPage, setScrapedUrls, setBotUuid]);
 
-  const createBotAndSave = useCallback(async () => {
+  const createBotAndSave = useCallback(async (urlsOverride?: string[]) => {
+    const urls = urlsOverride ?? scrapedUrls;
     setPhase('creating_bot_post_auth');
     setTrainingStep('creating_bot');
     setTrainingDetail('Creating your bots...');
@@ -226,6 +227,26 @@ export default function StepScraping() {
       || 'You are a helpful AI assistant for this website. Answer questions based on the website content. Be concise, friendly, and helpful.';
     const agentPromptText = editedSummary
       || 'You are an intelligent AI agent for this website. You can help users complete tasks, answer questions, and provide recommendations based on the website content.';
+
+    // Save users.sites via PUT /profile
+    try {
+      await api.put('profile', {
+        key: 'sites',
+        value: [{
+          uuid: siteUuid,
+          url: websiteUrl,
+          scrapped_urls: urls,
+          count: urls.length,
+          embedding_type: 'free',
+          chunkingSize: '500',
+          overlap: '100',
+          trainingType: 'basic',
+          trainingStatus: 'Completed',
+          fingerprint,
+          trainedAt: Math.floor(Date.now() / 1000),
+        }],
+      });
+    } catch (_) { /* non-critical */ }
 
     // Create chatbot
     const chatbotResult = await api.post('bots', {
@@ -255,6 +276,20 @@ export default function StepScraping() {
       setAgentBotUuid(agentResult.uuid);
     }
 
+    // Save users.bots via PUT /profile
+    try {
+      const bots: { uuid: string; name: string; siteUuid: string; type: string }[] = [];
+      if (chatbotResult?.uuid) {
+        bots.push({ uuid: chatbotResult.uuid, name: botName, siteUuid, type: 'chatbot' });
+      }
+      if (agentResult?.uuid) {
+        bots.push({ uuid: agentResult.uuid, name: botName, siteUuid, type: 'agent' });
+      }
+      if (bots.length > 0) {
+        await api.put('profile', { key: 'bots', value: bots });
+      }
+    } catch (_) { /* non-critical */ }
+
     // Save site_name to wp_options right after bot creation
     const siteName = companyInfo?.name || websiteUrl || '';
     try {
@@ -265,7 +300,7 @@ export default function StepScraping() {
     } catch (_) { /* non-critical */ }
 
     setPhase('complete');
-  }, [websiteUrl, fingerprint, siteUuid, companyInfo, editedSummary, setBotUuid, setAgentBotUuid]);
+  }, [websiteUrl, fingerprint, siteUuid, companyInfo, editedSummary, scrapedUrls, setBotUuid, setAgentBotUuid]);
 
   // Resume bot creation after user logs in mid-flow
   useEffect(() => {
