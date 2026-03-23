@@ -898,6 +898,27 @@
   gap: 12px;
   margin-top: 16px;
   font-size: 13px;
+  background: transparent;
+}
+
+.jug-ai-pagination-link {
+  color: #7c8aff;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 13px;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: color 0.15s;
+}
+.jug-ai-pagination-link:hover {
+  color: #a0aaff;
+  text-decoration: underline;
+}
+.jug-ai-pagination-link.disabled {
+  color: #555;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* ── Messages ── */
@@ -1024,34 +1045,55 @@
 
 /* ── Code Block ── */
 .jug-ai-code-block {
+  position: relative;
   border: 1px solid var(--jug-border);
   border-radius: var(--jug-radius);
   overflow: hidden;
   margin: 12px 0;
 }
 
-.jug-ai-code-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 12px;
-  background: var(--jug-bg);
-  border-bottom: 1px solid var(--jug-border);
-  font-size: 12px;
-  color: var(--jug-text-muted);
-}
-
-.jug-ai-code-block pre {
+.jug-ai-code-textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  padding-bottom: 28px;
   margin: 0;
-  padding: 12px;
-  overflow-x: auto;
+  border: none;
+  resize: none;
+  font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
   font-size: 13px;
+  line-height: 1.5;
   background: #1e293b;
   color: #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
-.jug-ai-code-block code {
-  font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+.jug-ai-code-textarea:focus {
+  outline: none;
+}
+
+.jug-ai-code-copy-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #888;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.jug-ai-code-copy-btn:hover {
+  color: #ccc;
 }
 
 /* ── Spinner ── */
@@ -1448,7 +1490,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100000;
+  z-index: 100002;
 }
 
 .jug-auth-modal {
@@ -2076,6 +2118,27 @@
   letter-spacing: -0.3px;
 }
 
+.jug-onboarding-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--jug-text-muted);
+  transition: color 0.15s;
+}
+
+.jug-onboarding-close:hover {
+  background: var(--jug-border);
+  color: var(--jug-text);
+}
+
 .jug-step-badge {
   display: inline-flex;
   align-items: center;
@@ -2421,6 +2484,7 @@
 
 .jug-chat-preview-input {
   display: flex;
+  align-items: center;
   gap: 8px;
   padding: 12px 16px;
   border-top: 1px solid var(--jug-border);
@@ -2433,12 +2497,43 @@
   border: 1px solid var(--jug-border);
   border-radius: 6px;
   font-size: 14px;
+  height: 36px;
+  box-sizing: border-box;
   outline: none;
   color: var(--jug-text);
 }
 
 .jug-chat-preview-input input:focus {
   border-color: var(--jug-primary);
+}
+
+.jug-chat-send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: var(--jug-text);
+  color: var(--jug-bg);
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.jug-chat-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.jug-onboarding-modal .jug-chat-send-btn {
+  background: var(--ob-surface-hover);
+  border: 1px solid var(--ob-border);
+  color: var(--ob-text);
+  width: 36px;
+  height: 36px;
 }
 
 /* ── StepBotPreview Grid ── */
@@ -2772,11 +2867,22 @@
 }
 
 .jug-onboarding-modal .jug-ai-btn-primary {
-  background: var(--ob-green-dim);
-  color: #000;
+  background: var(--ob-surface);
+  border: 1px solid var(--ob-border);
+  color: var(--ob-text);
 }
 
 .jug-onboarding-modal .jug-ai-btn-primary:hover {
+  background: var(--ob-surface-hover);
+}
+
+.jug-onboarding-modal .jug-step-footer .jug-ai-btn-primary {
+  background: var(--ob-green-dim);
+  border: none;
+  color: #000;
+}
+
+.jug-onboarding-modal .jug-step-footer .jug-ai-btn-primary:hover {
   background: var(--ob-green);
 }
 
@@ -2937,9 +3043,9 @@
 }
 
 .jug-onboarding-modal .jug-prompt-tab.active {
-  background: var(--ob-green-dim);
-  border-color: var(--ob-green-dim);
-  color: #000;
+  background: var(--ob-surface-hover);
+  border-color: var(--ob-muted);
+  color: var(--ob-text);
 }
 
 .jug-onboarding-modal .jug-prompt-action-link {
@@ -3007,8 +3113,8 @@
 }
 
 .jug-onboarding-modal .jug-chat-preview-header {
-  background: var(--ob-green-dim);
-  color: #000;
+  background: #2a2a2a;
+  color: #ccc;
 }
 
 .jug-onboarding-modal .jug-chat-preview-messages {
@@ -3022,8 +3128,8 @@
 }
 
 .jug-onboarding-modal .jug-chat-msg-user {
-  background: var(--ob-green-dim);
-  color: #000;
+  background: #3b3b3b;
+  color: var(--ob-text);
 }
 
 .jug-onboarding-modal .jug-chat-preview-input {
@@ -3057,14 +3163,14 @@
 }
 
 .jug-onboarding-modal .jug-embed-type-btn:hover {
-  border-color: var(--ob-green);
-  color: var(--ob-green);
+  border-color: var(--ob-muted);
+  color: var(--ob-text);
 }
 
 .jug-onboarding-modal .jug-embed-type-btn.active {
-  background: var(--ob-green-dim);
-  border-color: var(--ob-green-dim);
-  color: #000;
+  background: var(--ob-surface-hover);
+  border-color: var(--ob-muted);
+  color: var(--ob-text);
 }
 
 .jug-onboarding-modal .jug-embed-stack {
@@ -3105,6 +3211,203 @@
 
 .jug-onboarding-modal .jug-ai-code-block {
   border-color: var(--ob-border);
+}
+
+.jug-onboarding-modal .jug-ai-code-textarea {
+  background: var(--ob-surface);
+  color: var(--ob-text);
+}
+
+.jug-onboarding-modal .jug-ai-code-copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--ob-muted);
+}
+
+.jug-onboarding-modal .jug-ai-code-copy-btn:hover {
+  color: var(--ob-text);
+}
+
+/* Widget cards in embed step */
+.jug-embed-widget-card {
+  border: 1px solid var(--ob-border, #2a2a2a);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--ob-surface, #141414);
+  transition: border-color 0.15s;
+}
+
+.jug-embed-widget-card.active {
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.jug-embed-widget-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.jug-embed-widget-card-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.jug-embed-activate-btn {
+  padding: 4px 12px !important;
+  font-size: 12px !important;
+}
+
+.jug-embed-widget-badge-active {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.jug-embed-removed-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* ── Dashboard Embed Modal — Dark Blend ── */
+.jug-embed-modal .jug-embed-modal-body {
+  padding: 4px 0 8px;
+}
+
+.jug-embed-modal .jug-embed-modal-subtitle {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #888;
+  line-height: 1.5;
+}
+
+.jug-embed-modal .jug-embed-stack {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  gap: 12px;
+}
+
+.jug-embed-modal .jug-embed-widget-card {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+.jug-embed-modal .jug-embed-widget-card.active {
+  border-color: rgba(74, 222, 128, 0.35);
+  background: rgba(74, 222, 128, 0.04);
+}
+
+.jug-embed-modal .jug-embed-widget-card-title {
+  color: #f0f0f0;
+}
+
+.jug-embed-modal .jug-embed-reference-label {
+  color: #888;
+  font-weight: 500;
+}
+
+.jug-embed-modal .jug-embed-removed-note {
+  color: #666;
+}
+
+.jug-embed-modal .jug-embed-footnote {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: #555;
+}
+
+.jug-embed-modal .jug-embed-inline-code {
+  background: #222;
+  color: #aaa;
+}
+
+.jug-embed-modal .jug-ai-code-block {
+  border-color: #2a2a2a;
+  margin: 8px 0 0;
+}
+
+.jug-embed-modal .jug-ai-code-textarea {
+  background: #111;
+  color: #ccc;
+}
+
+.jug-embed-modal .jug-ai-code-copy-btn {
+  background: transparent;
+  border: none;
+  color: #555;
+}
+
+.jug-embed-modal .jug-ai-code-copy-btn:hover {
+  color: #aaa;
+}
+
+.jug-embed-remove-area {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+}
+
+.jug-embed-remove-text {
+  font-size: 12px;
+  color: #666;
+}
+
+.jug-embed-remove-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.jug-embed-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid #333;
+  border-radius: 5px;
+  background: transparent;
+  color: #888;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.jug-embed-remove-btn:hover {
+  border-color: #555;
+  color: #bbb;
+}
+
+.jug-embed-remove-btn.confirm {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.jug-embed-remove-btn.confirm:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.jug-embed-remove-btn.cancel {
+  color: #666;
+}
+
+.jug-embed-remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Badge dark */
@@ -3680,17 +3983,16 @@
 /* Edit + Embed row */
 #jug-ai-admin-root .jug-site-card-row-actions {
   display: flex;
+  justify-content: flex-start;
   gap: 8px;
   margin-bottom: 12px;
 }
 
 #jug-ai-admin-root .jug-site-card-btn {
-  flex: 1;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 5px 10px;
   border: 1px solid #3a3a3a;
   border-radius: 8px;
   background: #141414;
@@ -3705,6 +4007,53 @@
 #jug-ai-admin-root .jug-site-card-btn:hover {
   background: #222;
   border-color: #555;
+}
+
+/* ── Edit button dropdown submenu ── */
+#jug-ai-admin-root .jug-site-card-edit-wrapper {
+  position: relative;
+}
+
+#jug-ai-admin-root .jug-site-card-edit-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 180px;
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  padding: 4px;
+}
+
+#jug-ai-admin-root .jug-site-card-edit-menu-divider {
+  height: 1px;
+  background: #2a2a2a;
+  margin: 4px 0;
+}
+
+#jug-ai-admin-root .jug-site-card-edit-menu-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #e5e5e5;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+  text-align: left;
+}
+
+#jug-ai-admin-root .jug-site-card-edit-menu-action:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
 }
 
 /* Preview box */
@@ -3921,13 +4270,17 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  margin: 0 -28px;
 }
 
 .jug-edit-left {
-  width: 260px;
+  width: 280px;
   flex-shrink: 0;
   padding: 20px 28px;
   border-right: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .jug-edit-right {
@@ -3936,6 +4289,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  gap: 12px;
 }
 
 /* Template chips in dark modal */
@@ -3994,6 +4348,14 @@
   margin: 0 28px;
   border-color: #2a2a2a;
   background: #141414;
+}
+
+#jug-ai-admin-root .jug-ai-modal.jug-embed-modal .jug-embed-stack {
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
 }
 
 #jug-ai-admin-root .jug-ai-modal .jug-embed-info-title {
@@ -4432,4 +4794,345 @@
     align-items: flex-start;
   }
 
+}
+
+/* ═══════════════════════════════════════════
+   TRAINING MODALS
+   ═══════════════════════════════════════════ */
+
+/* Spinning icon for refresh button */
+@keyframes jug-spin-icon {
+  to { transform: rotate(360deg); }
+}
+
+.jug-spin-icon {
+  animation: jug-spin-icon 0.6s linear infinite;
+}
+
+/* Icon-only button (no background / border) */
+.jug-ai-icon-btn {
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  cursor: pointer;
+  color: #b0b0b0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: color 0.15s, background 0.15s;
+}
+.jug-ai-icon-btn:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+.jug-ai-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.jug-ai-icon-btn-danger {
+  color: #e06c75;
+}
+.jug-ai-icon-btn-danger:hover {
+  color: #ff8a8a;
+  background: rgba(224,108,117,0.1);
+}
+
+/* ── Training Info Modal ── */
+.jug-training-info-modal {
+  width: 720px;
+}
+
+.jug-training-info-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.jug-training-info-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.jug-training-info-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50vh;
+  padding-right: 4px;
+}
+
+.jug-training-info-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  border: 1px dashed #333;
+  border-radius: 8px;
+  color: #888;
+  text-align: center;
+}
+
+.jug-training-info-item {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.jug-training-info-item:hover .jug-training-info-delete-btn {
+  opacity: 1;
+}
+
+.jug-training-info-text {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #e5e5e5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.jug-training-info-url {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jug-training-info-url a {
+  color: #4ade80;
+  text-decoration: none;
+}
+
+.jug-training-info-url a:hover {
+  text-decoration: underline;
+}
+
+.jug-training-info-item-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.jug-training-info-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #2a2a2a;
+  color: #ccc;
+  border: 1px solid #3a3a3a;
+}
+
+.jug-training-info-badge-outline {
+  background: transparent;
+  border: 1px solid #444;
+  color: #999;
+}
+
+.jug-training-info-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #f87171;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.jug-training-info-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* ── Test Retrieval Modal ── */
+.jug-test-retrieval-modal {
+  width: 720px;
+}
+
+.jug-test-retrieval-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.jug-test-retrieval-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 45vh;
+  overflow-y: auto;
+  margin-top: 16px;
+  padding-right: 4px;
+}
+
+.jug-test-retrieval-item {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.jug-test-retrieval-text {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #e5e5e5;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.jug-test-retrieval-url {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jug-test-retrieval-url a {
+  color: #4ade80;
+  text-decoration: none;
+}
+
+.jug-test-retrieval-url a:hover {
+  text-decoration: underline;
+}
+
+.jug-test-retrieval-item-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ── Add Training Modal ── */
+.jug-add-training-modal {
+  width: 720px;
+}
+
+.jug-add-training-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+  min-height: 0;
+  flex: 1;
+}
+
+.jug-add-training-section {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.jug-add-training-section-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f0f0;
+}
+
+.jug-add-training-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 32px;
+  border: 2px dashed #333;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  color: #888;
+  text-align: center;
+}
+
+.jug-add-training-dropzone:hover {
+  border-color: #555;
+}
+
+.jug-add-training-dropzone.dragover {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.04);
+}
+
+.jug-add-training-file-preview {
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.jug-add-training-csv-preview {
+  display: flex;
+  flex-direction: column;
+}
+
+.jug-add-training-csv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.jug-add-training-csv-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #ccc;
+}
+
+/* ── Dark theme input/number overrides inside modals ── */
+#jug-ai-admin-root .jug-ai-modal .jug-ai-field input[type="number"] {
+  background: #1a1a1a;
+  border-color: #333;
+  color: #f0f0f0;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+#jug-ai-admin-root .jug-ai-modal .jug-ai-field input[type="number"]:focus {
+  border-color: #555;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+#jug-ai-admin-root .jug-ai-modal input[type="file"] {
+  color: #ccc;
+  font-size: 13px;
 }

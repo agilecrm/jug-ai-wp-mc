@@ -17,6 +17,12 @@ export interface Bot {
   training_status?: string;
   /** Site training UUID if different from bot (for training APIs) */
   site_uuid?: string;
+  /** URLs already scraped for this site */
+  scrapped_urls?: string[];
+  /** Bot UUID for the chatbot widget linked to this site */
+  chatbot_uuid?: string;
+  /** Bot UUID for the agent widget linked to this site */
+  agent_uuid?: string;
 }
 
 export interface Session {

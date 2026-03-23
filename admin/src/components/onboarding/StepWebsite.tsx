@@ -1,7 +1,17 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { useOnboarding } from '../../context/OnboardingContext';
 import api from '../../api';
+import { normalizeBotsPayload } from '../../utils/normalizeBots';
 import Spinner from '../shared/Spinner';
+
+function domainOf(raw: string): string {
+  try {
+    const u = raw.startsWith('http') ? raw : `https://${raw}`;
+    return new URL(u).hostname.replace(/^www\./, '').toLowerCase();
+  } catch {
+    return raw.trim().toLowerCase();
+  }
+}
 
 export default function StepWebsite() {
   const {
@@ -14,6 +24,7 @@ export default function StepWebsite() {
     setDiscoveredUrls,
     completeStep,
     setStep,
+    close,
   } = useOnboarding();
 
   const isLocalDev = (url: string) => /localhost|127\.0\.0\.1/.test(url);
@@ -24,6 +35,30 @@ export default function StepWebsite() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const autoTriggered = useRef(false);
+
+  /** If the user already has this site configured, skip the whole onboarding. */
+  const [existingSiteName, setExistingSiteName] = useState<string | null>(null);
+  const existingCheckDone = useRef(false);
+
+  useEffect(() => {
+    if (existingCheckDone.current) return;
+    existingCheckDone.current = true;
+    if (!window.jugAiConfig?.isLoggedIn) return;
+
+    const targetDomain = domainOf(siteUrl);
+    api.get('bots')
+      .then((data: unknown) => {
+        const bots = normalizeBotsPayload(data);
+        const match = bots.find((b) => {
+          const botDomain = domainOf(b.site_url || b.name || '');
+          return botDomain === targetDomain;
+        });
+        if (match) {
+          setExistingSiteName(match.name || match.site_url || siteUrl);
+        }
+      })
+      .catch(() => { /* ignore — proceed with normal flow */ });
+  }, [siteUrl]);
 
   const handleAnalyze = async () => {
     setError('');
@@ -92,7 +127,25 @@ export default function StepWebsite() {
 
         {error && <p className="jug-ai-error">{error}</p>}
 
-        {loading && (
+        {existingSiteName && (
+          <div className="jug-ai-card" style={{ textAlign: 'center', padding: '32px 20px' }}>
+            <p style={{ fontSize: 16, fontWeight: 500, margin: '0 0 8px' }}>
+              Your bot for <strong>{existingSiteName}</strong> is already configured.
+            </p>
+            <p className="jug-ai-muted" style={{ margin: '0 0 16px' }}>
+              You can manage it from the dashboard.
+            </p>
+            <a
+              href="#/dashboard"
+              className="jug-ai-btn-primary"
+              onClick={() => close()}
+            >
+              Go to Dashboard →
+            </a>
+          </div>
+        )}
+
+        {loading && !existingSiteName && (
           <div className="jug-ai-card" style={{ textAlign: 'center', padding: '40px 20px' }}>
             <Spinner size={28} />
             <p className="jug-ai-muted" style={{ marginTop: 12 }}>
@@ -101,7 +154,7 @@ export default function StepWebsite() {
           </div>
         )}
 
-        {companyInfo && !loading && (
+        {companyInfo && !loading && !existingSiteName && (
           <div className="jug-ai-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
               <div>
@@ -134,9 +187,9 @@ export default function StepWebsite() {
         )}
       </div>
 
-      {canContinue && (
+      {!existingSiteName && (
         <div className="jug-step-footer">
-          <button type="button" className="jug-ai-btn-primary" onClick={handleContinue}>
+          <button type="button" className="jug-ai-btn-primary" onClick={handleContinue} disabled={!canContinue}>
             Continue →
           </button>
         </div>

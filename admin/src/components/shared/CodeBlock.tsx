@@ -5,7 +5,7 @@ interface Props {
   language?: string;
 }
 
-export default function CodeBlock({ code, language = 'html' }: Props) {
+export default function CodeBlock({ code }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -16,15 +16,15 @@ export default function CodeBlock({ code, language = 'html' }: Props) {
 
   return (
     <div className="jug-ai-code-block">
-      <div className="jug-ai-code-header">
-        <span>{language}</span>
-        <button type="button" onClick={handleCopy} className="jug-ai-btn-sm">
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
-      </div>
-      <pre>
-        <code>{code}</code>
-      </pre>
+      <textarea
+        className="jug-ai-code-textarea"
+        value={code}
+        readOnly
+        rows={2}
+      />
+      <button type="button" onClick={handleCopy} className="jug-ai-code-copy-btn">
+        {copied ? '✓ Copied' : '📋 Copy'}
+      </button>
     </div>
   );
 }

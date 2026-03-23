@@ -180,6 +180,75 @@ class Jug_AI_Api_Client {
 		return self::post( '/training/' . sanitize_text_field( $uuid ) . '/text', $data );
 	}
 
+	public static function get_training_embeddings( $uuid, $params = array() ) {
+		$query = ! empty( $params ) ? '?' . http_build_query( $params ) : '';
+		return self::get( '/training/' . sanitize_text_field( $uuid ) . '/embeddings' . $query );
+	}
+
+	public static function delete_embedding( $uuid, $embedding_id, $params = array() ) {
+		$query = ! empty( $params ) ? '?' . http_build_query( $params ) : '';
+		return self::delete( '/training/' . sanitize_text_field( $uuid ) . '/embedding/' . sanitize_text_field( $embedding_id ) . $query );
+	}
+
+	public static function delete_all_embeddings( $uuid, $params = array() ) {
+		$query = ! empty( $params ) ? '?' . http_build_query( $params ) : '';
+		return self::delete( '/training/' . sanitize_text_field( $uuid ) . '/embeddings' . $query );
+	}
+
+	public static function test_retrieval( $uuid, $embedding_type, $data ) {
+		return self::post( '/training/' . sanitize_text_field( $uuid ) . '/' . sanitize_text_field( $embedding_type ) . '/retrieve', $data );
+	}
+
+	public static function add_training_bulk( $uuid, $data ) {
+		return self::post( '/training/' . sanitize_text_field( $uuid ) . '/bulk', $data );
+	}
+
+	public static function upload_training_file( $file_path, $file_name, $file_type ) {
+		$url     = self::get_base_url() . '/training/file/upload';
+		$headers = self::json_headers( true );
+		unset( $headers['Content-Type'] );
+
+		$boundary = wp_generate_password( 24, false );
+		$headers['Content-Type'] = 'multipart/form-data; boundary=' . $boundary;
+
+		$body  = '--' . $boundary . "\r\n";
+		$body .= 'Content-Disposition: form-data; name="file"; filename="' . $file_name . '"' . "\r\n";
+		$body .= 'Content-Type: ' . $file_type . "\r\n\r\n";
+		$body .= file_get_contents( $file_path ) . "\r\n";
+		$body .= '--' . $boundary . '--' . "\r\n";
+
+		$response = wp_remote_request( $url, array(
+			'method'  => 'POST',
+			'headers' => $headers,
+			'body'    => $body,
+			'timeout' => 60,
+		) );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+		$raw  = wp_remote_retrieve_body( $response );
+		$data = json_decode( $raw, true );
+
+		if ( $code >= 400 ) {
+			$message = isset( $data['detail'] ) ? $data['detail'] : "Upload failed ($code)";
+			return new WP_Error( 'jug_ai_api_error', $message, array( 'status' => $code ) );
+		}
+
+		return $data;
+	}
+
+	public static function train_file( $file_uuid, $embedding_type, $data ) {
+		$query = ! empty( $embedding_type ) ? '?embedding_type=' . urlencode( $embedding_type ) : '';
+		return self::post( '/training/file/' . sanitize_text_field( $file_uuid ) . '/train' . $query, $data );
+	}
+
+	public static function discover_urls_from_domain( $data ) {
+		return self::post( '/scrape/discover', $data );
+	}
+
 	// ── Conversations ──
 
 	public static function get_sessions( $bot_uuid, $params = array() ) {

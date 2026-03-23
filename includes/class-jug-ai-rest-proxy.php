@@ -144,6 +144,58 @@ class Jug_AI_Rest_Proxy {
 			'permission_callback' => array( $this, 'check_authenticated' ),
 		) );
 
+		// Training embeddings: list, delete one, delete all
+		register_rest_route( self::NAMESPACE, '/training/(?P<uuid>[a-zA-Z0-9\-]+)/embeddings', array(
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_training_embeddings' ),
+				'permission_callback' => array( $this, 'check_authenticated' ),
+			),
+			array(
+				'methods'             => 'DELETE',
+				'callback'            => array( $this, 'delete_all_embeddings' ),
+				'permission_callback' => array( $this, 'check_authenticated' ),
+			),
+		) );
+
+		register_rest_route( self::NAMESPACE, '/training/(?P<uuid>[a-zA-Z0-9\-]+)/embedding/(?P<embedding_id>[a-zA-Z0-9\-_]+)', array(
+			'methods'             => 'DELETE',
+			'callback'            => array( $this, 'delete_embedding' ),
+			'permission_callback' => array( $this, 'check_authenticated' ),
+		) );
+
+		// Test retrieval
+		register_rest_route( self::NAMESPACE, '/training/(?P<uuid>[a-zA-Z0-9\-]+)/(?P<embedding_type>[a-zA-Z0-9\-_]+)/retrieve', array(
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'test_retrieval' ),
+			'permission_callback' => array( $this, 'check_authenticated' ),
+		) );
+
+		// Training bulk
+		register_rest_route( self::NAMESPACE, '/training/(?P<uuid>[a-zA-Z0-9\-]+)/bulk', array(
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'add_training_bulk' ),
+			'permission_callback' => array( $this, 'check_authenticated' ),
+		) );
+
+		// Training file upload
+		register_rest_route( self::NAMESPACE, '/training/file/upload', array(
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'upload_training_file' ),
+			'permission_callback' => array( $this, 'check_authenticated' ),
+		) );
+
+		// Training train file
+		register_rest_route( self::NAMESPACE, '/training/file/(?P<file_uuid>[a-zA-Z0-9\-]+)/train', array(
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'train_file' ),
+			'permission_callback' => array( $this, 'check_authenticated' ),
+		) );
+
+		// Discover URLs from domain
+		// Discover URLs from domain
+		// (merged into existing /scrape/discover above)
+
 		// ── Conversations ──
 		register_rest_route( self::NAMESPACE, '/conversations/(?P<uuid>[a-zA-Z0-9\-]+)/sessions', array(
 			'methods'             => 'GET',
@@ -330,7 +382,20 @@ class Jug_AI_Rest_Proxy {
 
 	public function delete_bot( WP_REST_Request $request ) {
 		$uuid = sanitize_text_field( $request->get_param( 'uuid' ) );
-		return $this->respond( Jug_AI_Api_Client::delete_bot( $uuid ) );
+		$result = Jug_AI_Api_Client::delete_bot( $uuid );
+
+		// If the deleted bot is the active widget bot, disable the widget.
+		if ( ! is_wp_error( $result ) ) {
+			$settings = Jug_AI_Settings::get_settings();
+			if ( ! empty( $settings['active_bot_uuid'] ) && $settings['active_bot_uuid'] === $uuid ) {
+				Jug_AI_Settings::update_settings( array(
+					'active_bot_uuid' => '',
+					'widget_enabled'  => false,
+				) );
+			}
+		}
+
+		return $this->respond( $result );
 	}
 
 	public function delete_site( WP_REST_Request $request ) {
@@ -374,8 +439,8 @@ class Jug_AI_Rest_Proxy {
 	// ── Scrape Callbacks ──
 
 	public function scrape_discover( WP_REST_Request $request ) {
-		$website = esc_url_raw( $request->get_param( 'website' ) );
-		return $this->respond( Jug_AI_Api_Client::discover_urls( $website ) );
+		$body = $request->get_json_params();
+		return $this->respond( Jug_AI_Api_Client::discover_urls_from_domain( $body ) );
 	}
 
 	public function scrape_analyze( WP_REST_Request $request ) {
@@ -410,6 +475,101 @@ class Jug_AI_Rest_Proxy {
 		$uuid = sanitize_text_field( $request->get_param( 'uuid' ) );
 		$body = $request->get_json_params();
 		return $this->respond( Jug_AI_Api_Client::train_text( $uuid, $body ) );
+	}
+
+	public function get_training_embeddings( WP_REST_Request $request ) {
+		$uuid   = sanitize_text_field( $request->get_param( 'uuid' ) );
+		$params = array();
+
+		$skip = $request->get_param( 'skip' );
+		if ( $skip !== null ) {
+			$params['skip'] = absint( $skip );
+		}
+
+		$limit = $request->get_param( 'limit' );
+		if ( $limit ) {
+			$params['limit'] = absint( $limit );
+		}
+
+		$embedding_type = $request->get_param( 'embedding_type' );
+		if ( $embedding_type ) {
+			$params['embedding_type'] = sanitize_text_field( $embedding_type );
+		}
+
+		return $this->respond( Jug_AI_Api_Client::get_training_embeddings( $uuid, $params ) );
+	}
+
+	public function delete_embedding( WP_REST_Request $request ) {
+		$uuid         = sanitize_text_field( $request->get_param( 'uuid' ) );
+		$embedding_id = sanitize_text_field( $request->get_param( 'embedding_id' ) );
+		$params       = array();
+
+		$embedding_type = $request->get_param( 'embedding_type' );
+		if ( $embedding_type ) {
+			$params['embedding_type'] = sanitize_text_field( $embedding_type );
+		}
+
+		return $this->respond( Jug_AI_Api_Client::delete_embedding( $uuid, $embedding_id, $params ) );
+	}
+
+	public function delete_all_embeddings( WP_REST_Request $request ) {
+		$uuid   = sanitize_text_field( $request->get_param( 'uuid' ) );
+		$params = array();
+
+		$embedding_type = $request->get_param( 'embedding_type' );
+		if ( $embedding_type ) {
+			$params['embedding_type'] = sanitize_text_field( $embedding_type );
+		}
+
+		return $this->respond( Jug_AI_Api_Client::delete_all_embeddings( $uuid, $params ) );
+	}
+
+	public function test_retrieval( WP_REST_Request $request ) {
+		$uuid           = sanitize_text_field( $request->get_param( 'uuid' ) );
+		$embedding_type = sanitize_text_field( $request->get_param( 'embedding_type' ) );
+		$body           = $request->get_json_params();
+		return $this->respond( Jug_AI_Api_Client::test_retrieval( $uuid, $embedding_type, $body ) );
+	}
+
+	public function add_training_bulk( WP_REST_Request $request ) {
+		$uuid = sanitize_text_field( $request->get_param( 'uuid' ) );
+		$body = $request->get_json_params();
+		return $this->respond( Jug_AI_Api_Client::add_training_bulk( $uuid, $body ) );
+	}
+
+	public function upload_training_file( WP_REST_Request $request ) {
+		$files = $request->get_file_params();
+		if ( empty( $files['file'] ) ) {
+			return new WP_REST_Response( array( 'error' => 'No file uploaded.' ), 400 );
+		}
+
+		$file = $files['file'];
+
+		// Validate file type.
+		$allowed = array( 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain' );
+		if ( ! in_array( $file['type'], $allowed, true ) ) {
+			return new WP_REST_Response( array( 'error' => 'File type not allowed. Use PDF, DOCX, DOC, or TXT.' ), 400 );
+		}
+
+		// 5 MB limit.
+		if ( $file['size'] > 5 * 1024 * 1024 ) {
+			return new WP_REST_Response( array( 'error' => 'File too large (max 5 MB).' ), 400 );
+		}
+
+		$result = Jug_AI_Api_Client::upload_training_file( $file['tmp_name'], $file['name'], $file['type'] );
+		return $this->respond( $result );
+	}
+
+	public function train_file( WP_REST_Request $request ) {
+		$file_uuid      = sanitize_text_field( $request->get_param( 'file_uuid' ) );
+		$embedding_type = sanitize_text_field( $request->get_param( 'embedding_type' ) );
+		$body           = $request->get_json_params();
+		return $this->respond( Jug_AI_Api_Client::train_file( $file_uuid, $embedding_type, $body ) );
+	}
+
+	public function scrape_discover_urls( WP_REST_Request $request ) {
+		$body = $request->get_json_params();
+		return $this->respond( Jug_AI_Api_Client::discover_urls_from_domain( $body ) );
 	}
 
 	// ── Conversation Callbacks ──

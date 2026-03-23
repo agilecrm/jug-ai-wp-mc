@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import api from './api';
+import { normalizeBotsPayload } from './utils/normalizeBots';
 import Header from './components/shared/Header';
 import Footer from './components/shared/Footer';
 import HomePage from './pages/HomePage';
@@ -30,9 +31,9 @@ export default function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [onboardingUrl, setOnboardingUrl] = useState('');
   const [showHome, setShowHome] = useState(!isLoggedIn);
-  /** Check wp_options site_name to decide if the site is already configured. */
+  /** Check wp_options site_name or active_bot_uuid to decide if the site is already configured. */
   const [siteConfigured, setSiteConfigured] = useState<boolean>(
-    !!(window.jugAiConfig?.settings?.site_name)
+    !!(window.jugAiConfig?.settings?.site_name || window.jugAiConfig?.settings?.active_bot_uuid)
   );
 
   useEffect(() => {
@@ -41,9 +42,9 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  /** Re-read site_name from the live jugAiConfig / wp_options mirror. */
+  /** Re-read site_name / active_bot_uuid from the live jugAiConfig / wp_options mirror. */
   const checkSiteConfigured = useCallback(() => {
-    setSiteConfigured(!!(window.jugAiConfig?.settings?.site_name));
+    setSiteConfigured(!!(window.jugAiConfig?.settings?.site_name || window.jugAiConfig?.settings?.active_bot_uuid));
   }, []);
 
   /** On mount, if logged in and site is configured, auto-redirect to dashboard. */
@@ -54,7 +55,48 @@ export default function App() {
         window.location.hash = '#/dashboard';
       }
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, siteConfigured]);
+
+  /**
+   * When logged in but wp_options has no site_name / active_bot_uuid,
+   * ask the API whether bots already exist and sync wp_options if so.
+   */
+  useEffect(() => {
+    if (!isLoggedIn || siteConfigured) return;
+
+    let cancelled = false;
+    api.get('bots')
+      .then((data: unknown) => {
+        if (cancelled) return;
+        const list = normalizeBotsPayload(data);
+        if (list.length === 0) return;
+
+        const bot = list[0];
+        const siteName = bot.name || bot.site_url || '';
+        const botUuid = bot.chatbot_uuid || bot.agent_uuid || bot.uuid || '';
+
+        // Persist to wp_options so future page loads detect the configured site
+        const payload: Record<string, unknown> = {};
+        if (siteName) payload.site_name = siteName;
+        if (botUuid) payload.active_bot_uuid = botUuid;
+
+        if (Object.keys(payload).length) {
+          api.post('settings', payload).catch(() => {});
+          if (window.jugAiConfig?.settings) {
+            if (siteName) window.jugAiConfig.settings.site_name = siteName;
+            if (botUuid) window.jugAiConfig.settings.active_bot_uuid = botUuid;
+          }
+        }
+
+        setSiteConfigured(true);
+        setShowHome(false);
+        window.location.hash = '#/dashboard';
+      })
+      .catch(() => {
+        // API call failed — stay on current view
+      });
+    return () => { cancelled = true; };
+  }, [isLoggedIn, siteConfigured]);
 
   /** WordPress REST returned 401/403 (expired nonce or lost Jug session). Open OTP modal; do not use nonexistent #/login route. */
   useEffect(() => {
@@ -73,6 +115,13 @@ export default function App() {
   }, []);
 
   const handleGetStarted = (url: string) => {
+    // If site is already configured, go to dashboard instead of re-running onboarding
+    if (siteConfigured) {
+      if (isLoggedIn) {
+        window.location.hash = '#/dashboard';
+      }
+      return;
+    }
     setOnboardingUrl(url);
     setShowOnboarding(true);
   };
@@ -112,8 +161,8 @@ export default function App() {
       return;
     }
 
-    // Check wp_options site_name to decide where to route
-    const hasSite = !!(window.jugAiConfig?.settings?.site_name);
+    // Check wp_options site_name / active_bot_uuid to decide where to route
+    const hasSite = !!(window.jugAiConfig?.settings?.site_name || window.jugAiConfig?.settings?.active_bot_uuid);
     setSiteConfigured(hasSite);
     window.location.hash = hasSite ? '#/dashboard' : '#/';
   }, [showOnboarding]);
@@ -144,7 +193,7 @@ export default function App() {
           onLoginClick={handleAuthRequired}
           onLogout={handleLogout}
         />
-        <HomePage onGetStarted={handleGetStarted} siteConfigured={false} />
+        <HomePage onGetStarted={handleGetStarted} siteConfigured={siteConfigured} isLoggedIn={false} onLoginClick={handleAuthRequired} />
         <Footer />
         {showOnboarding && (
           <OnboardingModal
@@ -162,7 +211,7 @@ export default function App() {
 
   const renderPage = () => {
     if (route === '/' || route === '') {
-      return <HomePage onGetStarted={handleGetStarted} siteConfigured={siteConfigured} />;
+      return <HomePage onGetStarted={handleGetStarted} siteConfigured={siteConfigured} isLoggedIn={true} />;
     }
     if (route.startsWith('/conversations')) return <ConversationsPage route={route} />;
     if (route.startsWith('/settings')) return <SettingsPage />;
@@ -170,6 +219,10 @@ export default function App() {
       <DashboardPage
         onOpenOnboarding={openOnboarding}
         onConnectJug={() => setShowAuth(true)}
+        onSiteDeleted={() => {
+          setSiteConfigured(false);
+          window.location.hash = '#/';
+        }}
       />
     );
   };

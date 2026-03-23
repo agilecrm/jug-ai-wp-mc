@@ -61,6 +61,7 @@ function mapApiBot(item: Record<string, unknown>): Bot {
     site_uuid: (typeof siteUuidRaw === 'string' ? siteUuidRaw : b.site_uuid) as string | undefined,
     message_count: typeof msgCount === 'number' ? msgCount : b.message_count,
     session_count: typeof sessCount === 'number' ? sessCount : b.session_count,
+    scrapped_urls: Array.isArray(item.scrapped_urls) ? (item.scrapped_urls as string[]) : b.scrapped_urls,
   };
 }
 
@@ -73,19 +74,56 @@ export function normalizeBotsPayload(data: unknown): Bot[] {
     return [];
   }
 
-  if (Array.isArray(data)) {
-    raw.push(...data);
-  } else if (data && typeof data === 'object') {
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
     const o = data as Record<string, unknown>;
-    // /profile response: bot data lives under `sites`, not `bots`.
-    if (Array.isArray(o.sites)) raw.push(...o.sites);
-    else if (Array.isArray(o.bots)) raw.push(...o.bots);
-    else if (Array.isArray(o.data)) raw.push(...o.data);
-    else if (Array.isArray(o.items)) raw.push(...o.items);
-    else {
+
+    // Build a lookup from siteUuid → { chatbot_uuid, agent_uuid } from the bots array.
+    const botsBySite: Record<string, { chatbot_uuid?: string; agent_uuid?: string }> = {};
+    if (Array.isArray(o.bots)) {
+      for (const b of o.bots) {
+        if (b && typeof b === 'object') {
+          const bot = b as Record<string, unknown>;
+          const botId = (bot.uuid ?? bot._id ?? bot.id) as string | undefined;
+          const siteId = (bot.siteUuid ?? bot.site_uuid) as string | undefined;
+          const type = (bot.type ?? bot.widget_type ?? bot.widgetType ?? 'chatbot') as string;
+          if (botId && siteId) {
+            if (!botsBySite[siteId]) botsBySite[siteId] = {};
+            if (type === 'agent') {
+              botsBySite[siteId].agent_uuid = botId;
+            } else {
+              botsBySite[siteId].chatbot_uuid = botId;
+            }
+          }
+        }
+      }
+    }
+
+    // Cards are based on sites — one card per site entry.
+    if (Array.isArray(o.sites) && o.sites.length > 0) {
+      for (const s of o.sites) {
+        if (s && typeof s === 'object') {
+          const site = { ...(s as Record<string, unknown>) };
+          const siteId = (site.uuid ?? site._id ?? site.id) as string | undefined;
+          if (siteId && botsBySite[siteId]) {
+            site.chatbot_uuid = botsBySite[siteId].chatbot_uuid;
+            site.agent_uuid = botsBySite[siteId].agent_uuid;
+          }
+          raw.push(site);
+        }
+      }
+    } else if (Array.isArray(o.bots)) {
+      // Fallback: if no sites array, use bots directly (legacy)
+      raw.push(...o.bots);
+    } else if (Array.isArray(o.data)) {
+      raw.push(...o.data);
+    } else if (Array.isArray(o.items)) {
+      raw.push(...o.items);
+    } else {
       // eslint-disable-next-line no-console
       console.warn('[Jug AI] normalizeBotsPayload: unexpected response shape', Object.keys(o));
     }
+  } else if (Array.isArray(data)) {
+    raw.push(...data);
   } else {
     // eslint-disable-next-line no-console
     console.warn('[Jug AI] normalizeBotsPayload: unexpected data type', typeof data);

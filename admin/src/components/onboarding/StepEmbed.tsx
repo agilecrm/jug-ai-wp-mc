@@ -13,20 +13,21 @@ export default function StepEmbed() {
   const { botUuid, websiteUrl, companyInfo, close, completeStep, onAuthRequired } = useOnboarding();
 
   const [widgetType, setWidgetType] = useState<'chatbot' | 'agent'>('chatbot');
+  const [activatedType, setActivatedType] = useState<'chatbot' | 'agent' | null>(null);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
   const widgetBase = useMemo(() => getWidgetBase(), []);
 
-  const embedCode = useMemo(() => {
-    if (widgetType === 'agent') {
-      return `<script id="jug-ai-agent" src="${widgetBase}/agent.min.js" data-bot="${botUuid}"></script>`;
-    }
+  const chatbotCode = useMemo(() => {
     return `<script id="jug-ai-chat" src="${widgetBase}/chat.min.js" data-bot="${botUuid}"></script>`;
-  }, [widgetType, widgetBase, botUuid]);
+  }, [widgetBase, botUuid]);
 
-  const handleActivate = async () => {
+  const agentCode = useMemo(() => {
+    return `<script id="jug-ai-agent" src="${widgetBase}/agent.min.js" data-bot="${botUuid}"></script>`;
+  }, [widgetBase, botUuid]);
+
+  const handleActivate = async (type: 'chatbot' | 'agent') => {
     if (!window.jugAiConfig.isLoggedIn) {
       onAuthRequired();
       return;
@@ -39,7 +40,7 @@ export default function StepEmbed() {
       const siteName = companyInfo?.name || websiteUrl || '';
       await api.post('settings', {
         active_bot_uuid: botUuid,
-        widget_type: widgetType,
+        widget_type: type,
         widget_enabled: true,
         site_name: siteName,
       });
@@ -47,7 +48,7 @@ export default function StepEmbed() {
       if (window.jugAiConfig?.settings) {
         window.jugAiConfig.settings.site_name = siteName;
       }
-      setSaved(true);
+      setActivatedType(type);
       completeStep(4);
     } catch (err: any) {
       setError(err.message || 'Failed to save settings.');
@@ -56,7 +57,7 @@ export default function StepEmbed() {
     }
   };
 
-  const handleFinish = () => {
+  const handleGoToBot = () => {
     close();
     window.location.hash = '#/dashboard';
     window.location.reload();
@@ -67,7 +68,9 @@ export default function StepEmbed() {
       <div className="jug-step-body">
         <div className="jug-step-header">
           <h2>Add to your website</h2>
-          <span className="jug-step-badge">WordPress</span>
+          <button type="button" className="jug-onboarding-close" onClick={close} aria-label="Close">
+            ✕
+          </button>
         </div>
         <p className="jug-step-subtitle">
           Choose the widget type. After you activate, the plugin injects the same script on your
@@ -76,40 +79,59 @@ export default function StepEmbed() {
 
         <div className="jug-embed-type-toggle">
           <span className="jug-embed-type-label">Widget type</span>
-          <div className="jug-embed-type-buttons">
-            <button
-              type="button"
-              className={`jug-embed-type-btn ${widgetType === 'chatbot' ? 'active' : ''}`}
-              onClick={() => setWidgetType('chatbot')}
-            >
-              💬 Chatbot
-            </button>
-            <button
-              type="button"
-              className={`jug-embed-type-btn ${widgetType === 'agent' ? 'active' : ''}`}
-              onClick={() => setWidgetType('agent')}
-            >
-              ⚡ Agent
-            </button>
-          </div>
         </div>
 
         <div className="jug-embed-stack">
-          <div className="jug-embed-info jug-ai-success-box">
-            <p className="jug-embed-info-title">Auto-injected by this plugin</p>
-            <p className="jug-ai-muted jug-embed-info-text">
-              You do not need to paste code into your theme. Click &quot;Activate Widget&quot; and
-              visitors will see the widget on your site (according to your display settings).
-            </p>
+          {/* Simple Chatbot card */}
+          <div className="jug-embed-widget-card">
+            <div className="jug-embed-widget-card-header">
+              <span className="jug-embed-widget-card-title">💬 Simple Chatbot</span>
+              {activatedType === 'chatbot' ? (
+                <span className="jug-embed-widget-badge-active">Active</span>
+              ) : (
+                <button
+                  type="button"
+                  className="jug-ai-btn-primary jug-embed-activate-btn"
+                  onClick={() => handleActivate('chatbot')}
+                  disabled={saving}
+                >
+                  {saving && widgetType === 'chatbot' ? <><Spinner size={14} /> Saving...</> : 'Activate Widget'}
+                </button>
+              )}
+            </div>
+            <div className="jug-embed-reference">
+              <p className="jug-embed-reference-label">Reference — script tag the plugin adds</p>
+              <CodeBlock code={chatbotCode} language="html" />
+            </div>
+            {activatedType === 'agent' && (
+              <p className="jug-embed-removed-note jug-ai-muted">This widget is not active. Activating it will replace the Agent widget.</p>
+            )}
           </div>
 
-          <div className="jug-embed-reference">
-            <p className="jug-embed-reference-label">Reference — script tag the plugin adds</p>
-            <p className="jug-ai-muted jug-embed-reference-hint">
-              For support or custom setups, this matches what{' '}
-              <code className="jug-embed-inline-code">wp_footer</code> outputs.
-            </p>
-            <CodeBlock code={embedCode} language="html" />
+          {/* Agent card */}
+          <div className="jug-embed-widget-card">
+            <div className="jug-embed-widget-card-header">
+              <span className="jug-embed-widget-card-title">⚡ Agent</span>
+              {activatedType === 'agent' ? (
+                <span className="jug-embed-widget-badge-active">Active</span>
+              ) : (
+                <button
+                  type="button"
+                  className="jug-ai-btn-primary jug-embed-activate-btn"
+                  onClick={() => handleActivate('agent')}
+                  disabled={saving}
+                >
+                  {saving && widgetType === 'agent' ? <><Spinner size={14} /> Saving...</> : 'Activate Widget'}
+                </button>
+              )}
+            </div>
+            <div className="jug-embed-reference">
+              <p className="jug-embed-reference-label">Reference — script tag the plugin adds</p>
+              <CodeBlock code={agentCode} language="html" />
+            </div>
+            {activatedType === 'chatbot' && (
+              <p className="jug-embed-removed-note jug-ai-muted">This widget is not active. Activating it will replace the Simple Chatbot widget.</p>
+            )}
           </div>
 
           <p className="jug-embed-footnote jug-ai-muted">
@@ -120,28 +142,21 @@ export default function StepEmbed() {
 
         {error && <p className="jug-ai-error">{error}</p>}
 
-        {saved && (
+        {activatedType && (
           <div className="jug-ai-success-box">
-            <p>🎉 Widget is now live on your site!</p>
+            <p>🎉 {activatedType === 'chatbot' ? 'Simple Chatbot' : 'Agent'} widget is now live on your site!</p>
           </div>
         )}
       </div>
 
       <div className="jug-step-footer">
-        {saved ? (
-          <button type="button" className="jug-ai-btn-primary" onClick={handleFinish}>
-            Go to Dashboard
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="jug-ai-btn-primary"
-            onClick={handleActivate}
-            disabled={saving}
-          >
-            {saving ? <><Spinner size={16} /> Saving...</> : 'Activate Widget'}
-          </button>
-        )}
+        <button
+          type="button"
+          className="jug-ai-btn-primary"
+          onClick={handleGoToBot}
+        >
+          Go to Bot
+        </button>
       </div>
     </div>
   );

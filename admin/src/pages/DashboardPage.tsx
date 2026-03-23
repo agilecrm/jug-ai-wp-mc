@@ -10,11 +10,16 @@ import BotPreviewModal from '../components/dashboard/BotPreviewModal';
 import DeleteConfirmModal from '../components/dashboard/DeleteConfirmModal';
 import { normalizeBotsPayload } from '../utils/normalizeBots';
 import FeaturesSidebar from '../components/shared/FeaturesSidebar';
+import TrainingInfoModal from '../components/dashboard/TrainingInfoModal';
+import TestRetrievalModal from '../components/dashboard/TestRetrievalModal';
+import AddTrainingModal from '../components/dashboard/AddTrainingModal';
 
 interface Props {
   onOpenOnboarding: () => void;
   /** Opens OTP sign-in (same as header Login). Required to load bots when `isLoggedIn` is false. */
   onConnectJug?: () => void;
+  /** Called after a site/bot is successfully deleted so the app can update siteConfigured state. */
+  onSiteDeleted?: () => void;
 }
 
 function getGreeting(): string {
@@ -33,20 +38,9 @@ function getHostname(url: string): string {
   }
 }
 
-type StubKind = 'training-info' | 'test-retrieval' | null;
 
-const STUB_COPY: Record<Exclude<StubKind, null>, { title: string; body: string }> = {
-  'training-info': {
-    title: 'Training Info',
-    body: 'Detailed embedding lists and training management are available in the Jug AI web app. The WordPress plugin loads your bots from your Jug AI account — nothing is duplicated in the WordPress database except your login session.',
-  },
-  'test-retrieval': {
-    title: 'Test Retrieval',
-    body: 'Run retrieval tests against your knowledge base in the Jug AI web app. This plugin will connect here when the API route is enabled.',
-  },
-};
 
-export default function DashboardPage({ onOpenOnboarding, onConnectJug }: Props) {
+export default function DashboardPage({ onOpenOnboarding, onConnectJug, onSiteDeleted }: Props) {
   const greeting = useMemo(getGreeting, []);
   const userName = window.jugAiConfig?.userName || '';
 
@@ -54,10 +48,9 @@ export default function DashboardPage({ onOpenOnboarding, onConnectJug }: Props)
   const [loading, setLoading] = useState(true);
   const [activeBotUuid, setActiveBotUuid] = useState<string | null>(null);
 
-  const [stubModal, setStubModal] = useState<StubKind>(null);
-
   // Modal state
   const [editBotUuid, setEditBotUuid] = useState<string | undefined>();
+  const [editWidgetType, setEditWidgetType] = useState<'chatbot' | 'agent'>('chatbot');
   const [editOpen, setEditOpen] = useState(false);
 
   const [embedBot, setEmbedBot] = useState<Bot | null>(null);
@@ -73,6 +66,15 @@ export default function DashboardPage({ onOpenOnboarding, onConnectJug }: Props)
   const [deleteBotUuid, setDeleteBotUuid] = useState<string | undefined>();
   const [deleteBotName, setDeleteBotName] = useState('');
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const [trainingInfoBot, setTrainingInfoBot] = useState<Bot | null>(null);
+  const [trainingInfoOpen, setTrainingInfoOpen] = useState(false);
+
+  const [testRetrievalBot, setTestRetrievalBot] = useState<Bot | null>(null);
+  const [testRetrievalOpen, setTestRetrievalOpen] = useState(false);
+
+  const [addTrainingBot, setAddTrainingBot] = useState<Bot | null>(null);
+  const [addTrainingOpen, setAddTrainingOpen] = useState(false);
 
   /** Set when GET /bots fails (API error, expired token, wrong base URL). */
   const [botsLoadError, setBotsLoadError] = useState<string | null>(null);
@@ -187,14 +189,14 @@ export default function DashboardPage({ onOpenOnboarding, onConnectJug }: Props)
               bot={bot}
               isActive={bot.uuid === activeBotUuid}
               onSelect={() => setActiveBotUuid(bot.uuid)}
-              onEdit={() => { setEditBotUuid(bot.uuid); setEditOpen(true); }}
+              onEdit={(botUuid, wt) => { setEditBotUuid(botUuid); setEditWidgetType(wt); setEditOpen(true); }}
               onEmbed={() => { setEmbedBot(bot); setEmbedOpen(true); }}
               onPreviewChatbot={() => { setPreviewBot(bot); setPreviewOpen(true); }}
               onPreviewAgent={() => openAgentDemo(bot)}
               onViewLogs={() => { setLogsBotUuid(bot.uuid); setLogsBotName(bot.name); setLogsOpen(true); }}
-              onTrainingInfo={() => setStubModal('training-info')}
-              onAddTraining={onOpenOnboarding}
-              onTestRetrieval={() => setStubModal('test-retrieval')}
+              onTrainingInfo={() => { setTrainingInfoBot(bot); setTrainingInfoOpen(true); }}
+              onAddTraining={() => { setAddTrainingBot(bot); setAddTrainingOpen(true); }}
+              onTestRetrieval={() => { setTestRetrievalBot(bot); setTestRetrievalOpen(true); }}
               onDelete={() => { setDeleteBotUuid(bot.uuid); setDeleteBotName(bot.name); setDeleteOpen(true); }}
             />
           ))}
@@ -205,25 +207,34 @@ export default function DashboardPage({ onOpenOnboarding, onConnectJug }: Props)
       <FeaturesSidebar />
       </div>
 
-      {stubModal && (
-        <div className="jug-ai-modal-overlay" onClick={() => setStubModal(null)}>
-          <div className="jug-ai-modal jug-ai-modal-md" onClick={(e) => e.stopPropagation()}>
-            <div className="jug-ai-modal-header">
-              <h3>{STUB_COPY[stubModal].title}</h3>
-              <button type="button" className="jug-ai-modal-close" onClick={() => setStubModal(null)}>&times;</button>
-            </div>
-            <p className="jug-ai-muted" style={{ margin: '0 0 20px', lineHeight: 1.6 }}>{STUB_COPY[stubModal].body}</p>
-            <div className="jug-ai-modal-actions">
-              <button type="button" className="jug-ai-btn-primary" onClick={() => setStubModal(null)}>OK</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <TrainingInfoModal
+        open={trainingInfoOpen}
+        onClose={() => setTrainingInfoOpen(false)}
+        trainingUuid={trainingInfoBot?.site_uuid || trainingInfoBot?.uuid || null}
+        embeddingType="free"
+      />
+
+      <TestRetrievalModal
+        open={testRetrievalOpen}
+        onClose={() => setTestRetrievalOpen(false)}
+        trainingUuid={testRetrievalBot?.site_uuid || testRetrievalBot?.uuid || null}
+        embeddingType="free"
+      />
+
+      <AddTrainingModal
+        open={addTrainingOpen}
+        onClose={() => setAddTrainingOpen(false)}
+        trainingUuid={addTrainingBot?.site_uuid || addTrainingBot?.uuid || null}
+        embeddingType="free"
+        siteUrl={addTrainingBot?.site_url}
+        scrappedUrls={addTrainingBot?.scrapped_urls}
+      />
 
       <BotEditModal
         open={editOpen}
         onClose={() => setEditOpen(false)}
         botUuid={editBotUuid}
+        widgetType={editWidgetType}
         onSaved={loadBots}
       />
 
@@ -255,7 +266,10 @@ export default function DashboardPage({ onOpenOnboarding, onConnectJug }: Props)
         onClose={() => setDeleteOpen(false)}
         botUuid={deleteBotUuid}
         botName={deleteBotName}
-        onDeleted={loadBots}
+        onDeleted={() => {
+          loadBots();
+          onSiteDeleted?.();
+        }}
       />
     </div>
   );

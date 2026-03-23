@@ -21,6 +21,12 @@ export default function DeleteConfirmModal({ open, onClose, botUuid, botName, on
     try {
       // Cascade delete: removes site, bots, embeddings, chat histories, and user profile entries
       await api.del(`sites/${botUuid}`);
+      // Disable the widget on the WordPress site
+      await api.post('settings', {
+        active_bot_uuid: '',
+        widget_enabled: false,
+        site_name: '',
+      }).catch(() => {});
       // Clear local config so home page no longer shows "Go to Bot"
       if (window.jugAiConfig?.settings) {
         window.jugAiConfig.settings.site_name = '';

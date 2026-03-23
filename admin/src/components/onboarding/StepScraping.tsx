@@ -84,6 +84,7 @@ export default function StepScraping() {
     companyInfo, editedSummary,
     scrapedPages, scrapedUrls, addScrapedPage, setScrapedUrls,
     setBotUuid, setAgentBotUuid, completeStep, setStep,
+    botUuid, completedSteps,
     onAuthRequired,
   } = useOnboarding();
 
@@ -325,6 +326,21 @@ export default function StepScraping() {
   }, [phase, createBotAndSave]);
 
   useEffect(() => {
+    // If scraping was already completed, restore state instead of re-running
+    if (scrapedPages.length > 0 && (completedSteps.has(1) || scrapedUrls.length > 0)) {
+      startedRef.current = true;
+      if (botUuid) {
+        setPhase('complete');
+      } else if (!window.jugAiConfig?.isLoggedIn) {
+        setPhase('awaiting_auth');
+      } else {
+        // Logged in but bot not yet created
+        createBotAndSave().catch((err) => {
+          setError(err.message || 'Failed to create bot.');
+        });
+      }
+      return;
+    }
     startPipeline();
     return () => { abortRef.current?.abort(); };
   }, []);
@@ -441,12 +457,6 @@ export default function StepScraping() {
         <div className="jug-ai-card jug-scrape-urls-card">
           <div className="jug-scrape-urls-header">
             <strong>Pages ({scrapedPages.length})</strong>
-            <span className="jug-scrape-urls-count">
-              {phase === 'scraping' && <Spinner size={14} />}
-              {(phase === 'complete' || phase === 'training' || phase === 'awaiting_auth' || phase === 'creating_bot_post_auth') && (
-                <span className="jug-scrape-urls-check">✓</span>
-              )}
-            </span>
           </div>
           <div className="jug-scrape-urls-list">
             {scrapedPages.map((page, i) => (
@@ -468,43 +478,35 @@ export default function StepScraping() {
           </div>
         </div>
 
-        {phase === 'awaiting_auth' && (
-          <div className="jug-ai-card" style={{ textAlign: 'center', padding: '24px 20px' }}>
-            <p style={{ margin: '0 0 12px', fontWeight: 600, fontSize: 16 }}>
-              Sign in to save your bot
-            </p>
-            <p className="jug-ai-muted" style={{ margin: '0 0 16px' }}>
-              Training is complete! Sign in or create an account to save your bot and continue.
-            </p>
-            <button
-              type="button"
-              className="jug-ai-btn-primary"
-              onClick={() => onAuthRequired()}
-            >
-              Sign in / Sign up
-            </button>
-          </div>
-        )}
-
         {error && <p className="jug-ai-error">{error}</p>}
       </div>
 
       <div className="jug-step-footer">
-        <button
-          type="button"
-          className="jug-ai-btn-primary"
-          onClick={handleContinue}
-          disabled={phase !== 'complete' && phase !== 'awaiting_auth'}
-        >
-          {buttonLabel ? (
-            <>
-              <Spinner size={16} />
-              <span>{buttonLabel}</span>
-            </>
-          ) : (
-            'Continue →'
-          )}
-        </button>
+        {phase === 'awaiting_auth' ? (
+          <button
+            type="button"
+            className="jug-ai-btn-primary"
+            onClick={() => onAuthRequired()}
+          >
+            Login / Sign Up →
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="jug-ai-btn-primary"
+            onClick={handleContinue}
+            disabled={phase !== 'complete'}
+          >
+            {buttonLabel ? (
+              <>
+                <Spinner size={16} />
+                <span>{buttonLabel}</span>
+              </>
+            ) : (
+              'Continue →'
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

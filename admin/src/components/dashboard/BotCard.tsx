@@ -1,11 +1,11 @@
-import { useState } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 import type { Bot } from '../../types';
 
 interface BotCardProps {
   bot: Bot;
   isActive: boolean;
   onSelect: () => void;
-  onEdit: () => void;
+  onEdit: (botUuid: string, widgetType: 'chatbot' | 'agent') => void;
   onEmbed: () => void;
   onPreviewChatbot: () => void;
   onPreviewAgent: () => void;
@@ -70,6 +70,22 @@ export default function BotCard({
   const pageCount = bot.page_count ?? 0;
   const lastTrained = formatLastTrained(bot.trained_at ?? null, bot.training_status);
 
+  // Edit submenu state
+  const [editMenuOpen, setEditMenuOpen] = useState(false);
+  const editMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close submenu on outside click
+  useEffect(() => {
+    if (!editMenuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (editMenuRef.current && !editMenuRef.current.contains(e.target as Node)) {
+        setEditMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [editMenuOpen]);
+
   return (
     <div
       className={`jug-site-card${isActive ? ' active' : ''}`}
@@ -103,7 +119,6 @@ export default function BotCard({
           <p className="jug-site-card-url">{displayUrl}</p>
         </div>
         <div className="jug-site-card-top-right">
-          <span className="jug-site-card-pages-badge">{pageCount} pages</span>
           <button
             type="button"
             className="jug-site-card-delete"
@@ -115,19 +130,44 @@ export default function BotCard({
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
             </svg>
           </button>
+          <span className="jug-site-card-pages-badge">{pageCount} pages</span>
         </div>
       </div>
 
       {/* Edit + Embed */}
       <div className="jug-site-card-row-actions">
-        <button
-          type="button"
-          className="jug-site-card-btn"
-          onClick={(e) => { e.stopPropagation(); onEdit(); }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-          Edit
-        </button>
+        <div className="jug-site-card-edit-wrapper" ref={editMenuRef}>
+          <button
+            type="button"
+            className="jug-site-card-btn"
+            onClick={(e) => { e.stopPropagation(); setEditMenuOpen((v) => !v); }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+            Edit
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: 2 }}><polyline points="6 9 12 15 18 9" /></svg>
+          </button>
+
+          {editMenuOpen && (
+            <div className="jug-site-card-edit-menu" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="jug-site-card-edit-menu-action"
+                onClick={() => { setEditMenuOpen(false); onEdit(bot.chatbot_uuid || bot.uuid, 'chatbot'); }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                Chatbot
+              </button>
+              <button
+                type="button"
+                className="jug-site-card-edit-menu-action"
+                onClick={() => { setEditMenuOpen(false); onEdit(bot.agent_uuid || bot.uuid, 'agent'); }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+                Agent
+              </button>
+            </div>
+          )}
+        </div>
         <button
           type="button"
           className="jug-site-card-btn"

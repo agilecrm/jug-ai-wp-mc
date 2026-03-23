@@ -250,7 +250,7 @@ export default function StepSystemPrompt() {
                 onClick={() => generatePrompt()}
                 disabled={generating}
               >
-                🔄 {currentHasCustom ? 'Regenerate' : 'Generate with AI'}
+                ✦ {currentHasCustom ? 'Regenerate' : 'Generate with AI'}
               </button>
             </div>
           </div>
@@ -267,7 +267,7 @@ export default function StepSystemPrompt() {
               }
               rows={10}
               className="jug-ai-textarea"
-              disabled={generating}
+              readOnly={generating}
               style={{ minHeight: 200 }}
             />
             {generating && (

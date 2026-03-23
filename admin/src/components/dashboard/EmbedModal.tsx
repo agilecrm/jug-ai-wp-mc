@@ -1,5 +1,7 @@
-import { useState } from '@wordpress/element';
+import { useMemo, useState } from '@wordpress/element';
+import api from '../../api';
 import CodeBlock from '../shared/CodeBlock';
+import Spinner from '../shared/Spinner';
 
 interface Props {
   open: boolean;
@@ -10,36 +12,88 @@ interface Props {
   hostname: string;
 }
 
-const PLATFORMS = [
-  { id: 'html' as const, label: 'HTML', icon: 'code' },
-  { id: 'shopify' as const, label: 'Shopify', icon: 'shop' },
-  { id: 'wordpress' as const, label: 'WordPress', icon: 'globe' },
-] as const;
-
-type Platform = typeof PLATFORMS[number]['id'];
+function getWidgetBase(): string {
+  const raw = window.jugAiConfig.widgetBase || 'https://app.jug.ai';
+  return raw.replace(/\/$/, '');
+}
 
 export default function EmbedModal({ open, onClose, botUuid, botName, widgetType, hostname }: Props) {
-  const [embedType, setEmbedType] = useState<'chatbot' | 'agent'>(
-    widgetType === 'agent' ? 'agent' : 'chatbot'
+  const [activatedType, setActivatedType] = useState<'chatbot' | 'agent' | null>(
+    widgetType === 'agent' || widgetType === 'chatbot' ? widgetType : null
   );
-  const [platform, setPlatform] = useState<Platform>('html');
+  const [saving, setSaving] = useState(false);
+  const [savingType, setSavingType] = useState<'chatbot' | 'agent' | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [error, setError] = useState('');
+
+  const widgetBase = useMemo(() => getWidgetBase(), []);
+
+  const chatbotCode = useMemo(() => {
+    return `<script id="jug-ai-chat" src="${widgetBase}/chat.min.js" data-bot="${botUuid}"></script>`;
+  }, [widgetBase, botUuid]);
+
+  const agentCode = useMemo(() => {
+    return `<script id="jug-ai-agent" src="${widgetBase}/agent.min.js" data-bot="${botUuid}"></script>`;
+  }, [widgetBase, botUuid]);
 
   if (!open) return null;
 
-  const chatWidgetSrc = 'https://app.jug.ai/chat.min.js';
-  const agentWidgetSrc = 'https://app.jug.ai/agent.min.js';
+  const handleActivate = async (type: 'chatbot' | 'agent') => {
+    setSaving(true);
+    setSavingType(type);
+    setError('');
 
-  const chatbotScript = botUuid
-    ? `<script id="jug-ai-chat" src="${chatWidgetSrc}" data-bot="${botUuid}"></script>`
-    : '';
-  const agentScript = botUuid
-    ? `<script id="jug-ai-agent" src="${agentWidgetSrc}" data-bot="${botUuid}"></script>`
-    : '';
-  const embedScript = embedType === 'agent' ? agentScript : chatbotScript;
+    try {
+      const siteName = hostname || window.jugAiConfig?.settings?.site_name || '';
+      await api.post('settings', {
+        active_bot_uuid: botUuid,
+        widget_type: type,
+        widget_enabled: true,
+        site_name: siteName,
+      });
+      if (window.jugAiConfig?.settings) {
+        window.jugAiConfig.settings.widget_type = type;
+        window.jugAiConfig.settings.widget_enabled = true;
+        window.jugAiConfig.settings.site_name = siteName;
+      }
+      setActivatedType(type);
+    } catch (err: any) {
+      setError(err.message || 'Failed to save settings.');
+    } finally {
+      setSaving(false);
+      setSavingType(null);
+    }
+  };
+
+  const handleRemoveWidget = async () => {
+    if (!confirmRemove) {
+      setConfirmRemove(true);
+      return;
+    }
+    setRemoving(true);
+    setError('');
+
+    try {
+      await api.post('settings', {
+        active_bot_uuid: botUuid,
+        widget_enabled: false,
+      });
+      if (window.jugAiConfig?.settings) {
+        window.jugAiConfig.settings.widget_enabled = false;
+      }
+      setActivatedType(null);
+      setConfirmRemove(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to remove widget.');
+    } finally {
+      setRemoving(false);
+    }
+  };
 
   return (
     <div className="jug-ai-modal-overlay" onClick={onClose}>
-      <div className="jug-ai-modal jug-ai-modal-md" onClick={(e) => e.stopPropagation()}>
+      <div className="jug-ai-modal jug-ai-modal-md jug-embed-modal" onClick={(e) => e.stopPropagation()}>
         <div className="jug-ai-modal-header">
           <h3>Embed on {hostname || 'your site'}</h3>
           <button type="button" className="jug-ai-modal-close" onClick={onClose}>&times;</button>
@@ -50,71 +104,110 @@ export default function EmbedModal({ open, onClose, botUuid, botName, widgetType
             No bot found. Create one first.
           </p>
         ) : (
-          <div style={{ padding: '0 0 8px' }}>
-            {/* Widget type toggle */}
-            <div className="jug-embed-type-toggle">
-              <span>Widget:</span>
-              <div className="jug-embed-type-buttons">
-                <button
-                  type="button"
-                  className={`jug-embed-type-btn${embedType === 'chatbot' ? ' active' : ''}`}
-                  onClick={() => setEmbedType('chatbot')}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                  Chatbot
-                </button>
-                <button
-                  type="button"
-                  className={`jug-embed-type-btn${embedType === 'agent' ? ' active' : ''}`}
-                  onClick={() => setEmbedType('agent')}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
-                  Agent
-                </button>
+          <div className="jug-embed-modal-body">
+            <p className="jug-embed-modal-subtitle">
+              Choose the widget type. After you activate, the plugin injects the script on your
+              site via <code className="jug-embed-inline-code">wp_footer</code>.
+            </p>
+
+            <div className="jug-embed-stack">
+              {/* Simple Chatbot card */}
+              <div className={`jug-embed-widget-card${activatedType === 'chatbot' ? ' active' : ''}`}>
+                <div className="jug-embed-widget-card-header">
+                  <span className="jug-embed-widget-card-title">💬 Simple Chatbot</span>
+                  {activatedType === 'chatbot' ? (
+                    <span className="jug-embed-widget-badge-active">Active</span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="jug-ai-btn-primary jug-embed-activate-btn"
+                      onClick={() => handleActivate('chatbot')}
+                      disabled={saving}
+                    >
+                      {saving && savingType === 'chatbot' ? <><Spinner size={14} /> Saving...</> : 'Activate'}
+                    </button>
+                  )}
+                </div>
+                <div className="jug-embed-reference">
+                  <p className="jug-embed-reference-label">Script tag the plugin adds</p>
+                  <CodeBlock code={chatbotCode} language="html" />
+                </div>
+                {activatedType === 'agent' && (
+                  <p className="jug-embed-removed-note">Activating this will replace the Agent widget.</p>
+                )}
+              </div>
+
+              {/* Agent card */}
+              <div className={`jug-embed-widget-card${activatedType === 'agent' ? ' active' : ''}`}>
+                <div className="jug-embed-widget-card-header">
+                  <span className="jug-embed-widget-card-title">⚡ Agent</span>
+                  {activatedType === 'agent' ? (
+                    <span className="jug-embed-widget-badge-active">Active</span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="jug-ai-btn-primary jug-embed-activate-btn"
+                      onClick={() => handleActivate('agent')}
+                      disabled={saving}
+                    >
+                      {saving && savingType === 'agent' ? <><Spinner size={14} /> Saving...</> : 'Activate'}
+                    </button>
+                  )}
+                </div>
+                <div className="jug-embed-reference">
+                  <p className="jug-embed-reference-label">Script tag the plugin adds</p>
+                  <CodeBlock code={agentCode} language="html" />
+                </div>
+                {activatedType === 'chatbot' && (
+                  <p className="jug-embed-removed-note">Activating this will replace the Simple Chatbot widget.</p>
+                )}
               </div>
             </div>
 
-            {/* Platform / code area */}
-            <div className="jug-embed-panel">
-              <div className="jug-embed-platforms">
-                {PLATFORMS.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    className={`jug-embed-platform-btn${platform === p.id ? ' active' : ''}`}
-                    onClick={() => setPlatform(p.id)}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
+            <p className="jug-embed-footnote">
+              Themes that remove <code className="jug-embed-inline-code">wp_footer</code> may not
+              show the widget until the footer hook is restored.
+            </p>
 
-              <div className="jug-embed-code-area">
-                {platform === 'html' && (
-                  <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--jug-text-muted)' }}>
-                    Paste before the closing <code style={{ background: 'var(--jug-bg)', padding: '1px 6px', borderRadius: 4, fontSize: 12 }}>&lt;/body&gt;</code> tag:
-                  </p>
-                )}
-                {platform === 'shopify' && (
-                  <ol className="jug-embed-instructions">
-                    <li>Go to Shopify Admin &rarr; Online Store &rarr; Themes</li>
-                    <li>Click "Edit Code" on your active theme</li>
-                    <li>Open <code>theme.liquid</code></li>
-                    <li>Paste the script before <code>&lt;/body&gt;</code></li>
-                    <li>Save and preview</li>
-                  </ol>
-                )}
-                {platform === 'wordpress' && (
-                  <ol className="jug-embed-instructions">
-                    <li>Go to WordPress Admin &rarr; Appearance &rarr; Theme File Editor</li>
-                    <li>Select <code>footer.php</code></li>
-                    <li>Paste the script before <code>&lt;/body&gt;</code></li>
-                    <li>Or use the "Insert Headers and Footers" plugin</li>
-                  </ol>
-                )}
-                <CodeBlock code={embedScript} language="html" />
+            {error && <p className="jug-ai-error">{error}</p>}
+
+            {activatedType && (
+              <div className="jug-embed-remove-area">
+                <span className="jug-embed-remove-text">
+                  {confirmRemove ? 'Are you sure you want to remove the widget?' : 'No longer need the widget on your site?'}
+                </span>
+                <div className="jug-embed-remove-actions">
+                  {confirmRemove ? (
+                    <>
+                      <button
+                        type="button"
+                        className="jug-embed-remove-btn confirm"
+                        onClick={handleRemoveWidget}
+                        disabled={removing}
+                      >
+                        {removing ? <><Spinner size={12} /> Removing...</> : 'Yes, remove'}
+                      </button>
+                      <button
+                        type="button"
+                        className="jug-embed-remove-btn cancel"
+                        onClick={() => setConfirmRemove(false)}
+                        disabled={removing}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="jug-embed-remove-btn"
+                      onClick={() => setConfirmRemove(true)}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

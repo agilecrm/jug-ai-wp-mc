@@ -3,6 +3,8 @@ import FeaturesSidebar from '../components/shared/FeaturesSidebar';
 interface Props {
   onGetStarted: (url: string) => void;
   siteConfigured?: boolean;
+  isLoggedIn?: boolean;
+  onLoginClick?: () => void;
 }
 
 function getDefaultHeroUrl(): string {
@@ -10,8 +12,8 @@ function getDefaultHeroUrl(): string {
   return (c?.defaultTrainingUrl || c?.siteUrl || '').trim();
 }
 
-export default function HomePage({ onGetStarted, siteConfigured }: Props) {
-  const siteName = window.jugAiConfig?.settings?.site_name || '';
+export default function HomePage({ onGetStarted, siteConfigured, isLoggedIn, onLoginClick }: Props) {
+  const siteName = window.jugAiConfig?.settings?.site_name || window.jugAiConfig?.siteName || '';
 
   return (
     <div className="jug-home">
@@ -44,13 +46,23 @@ export default function HomePage({ onGetStarted, siteConfigured }: Props) {
                     ? <>Your bot for <strong>{siteName}</strong> is live and ready.</>
                     : <>Your AI chatbot is live and ready.</>}
                 </p>
-                <a href="#/dashboard" className="jug-home-cta-btn">
-                  Go to Bot
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </a>
+                {isLoggedIn ? (
+                  <a href="#/dashboard" className="jug-home-cta-btn">
+                    Go to App
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  </a>
+                ) : (
+                  <button type="button" className="jug-home-cta-btn" onClick={onLoginClick}>
+                    Go to App
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  </button>
+                )}
               </div>
             ) : (
               <button type="button" className="jug-home-cta-btn" onClick={() => onGetStarted(getDefaultHeroUrl())}>

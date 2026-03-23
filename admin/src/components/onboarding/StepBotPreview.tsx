@@ -32,6 +32,7 @@ export default function StepBotPreview() {
     websiteUrl,
     completeStep,
     setStep,
+    close,
   } = useOnboarding();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -152,7 +153,9 @@ export default function StepBotPreview() {
       <div className="jug-step-body">
         <div className="jug-step-header">
           <h2>Preview your bot</h2>
-          <span className="jug-step-badge">Test before embed</span>
+          <button type="button" className="jug-onboarding-close" onClick={close} aria-label="Close">
+            ✕
+          </button>
         </div>
         <p className="jug-step-subtitle">
           Test your chatbot by sending messages below. Make sure it responds the way you want before embedding.
@@ -231,10 +234,10 @@ export default function StepBotPreview() {
                 />
                 <button
                   type="submit"
-                  className="jug-ai-btn-primary"
+                  className="jug-chat-send-btn"
                   disabled={isStreaming || !inputValue.trim()}
                 >
-                  Send
+                  &#10148;
                 </button>
               </form>
             </div>
