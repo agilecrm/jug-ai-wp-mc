@@ -128,12 +128,12 @@ export default function DashboardPage({ onOpenOnboarding, onConnectJug, onSiteDe
   return (
     <div className="jug-ai-dashboard">
       <div className="jug-dash-columns">
-      <div className="jug-dash-main">
       <h1 className="jug-dash-greeting">
         {greeting}{userName ? `, ${userName}` : ''}!
       </h1>
       <p className="jug-dash-subtitle">Manage your trained websites and chatbots</p>
 
+      <div className="jug-dash-main">
       {!jugAccountConnected && (
         <div className="jug-dash-api-notice jug-dash-api-notice-warn" role="status">
           <strong>Not connected to Jug.ai</strong>
