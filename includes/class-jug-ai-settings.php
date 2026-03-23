@@ -1,4 +1,11 @@
 <?php
+/**
+ * Settings management for Jug.ai plugin.
+ *
+ * @package Jug_AI
+ * @license GPL-2.0-or-later
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -10,7 +17,7 @@ class Jug_AI_Settings {
 	const USER_NAME_OPTION  = 'jug_ai_user_name';
 	const USER_EMAIL_OPTION = 'jug_ai_user_email';
 	const SETTINGS_OPTION = 'jug_ai_settings';
-	const CIPHER_METHOD   = 'aes-256-cbc';
+	const CIPHER_METHOD   = 'aes-128-cbc';
 
 	private static function get_encryption_key() {
 		return substr( hash( 'sha256', wp_salt( 'auth' ) ), 0, 32 );

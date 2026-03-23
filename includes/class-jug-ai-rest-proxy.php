@@ -1,4 +1,11 @@
 <?php
+/**
+ * REST API proxy – forwards admin requests to the Jug.ai external API.
+ *
+ * @package Jug_AI
+ * @license GPL-2.0-or-later
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -556,7 +563,13 @@ class Jug_AI_Rest_Proxy {
 			return new WP_REST_Response( array( 'error' => 'File too large (max 5 MB).' ), 400 );
 		}
 
-		$result = Jug_AI_Api_Client::upload_training_file( $file['tmp_name'], $file['name'], $file['type'] );
+		// Verify this is a real PHP upload (prevents local file inclusion).
+		if ( ! is_uploaded_file( $file['tmp_name'] ) ) {
+			return new WP_REST_Response( array( 'error' => 'Invalid upload.' ), 400 );
+		}
+
+		$safe_name = sanitize_file_name( $file['name'] );
+		$result    = Jug_AI_Api_Client::upload_training_file( $file['tmp_name'], $safe_name, $file['type'] );
 		return $this->respond( $result );
 	}
 

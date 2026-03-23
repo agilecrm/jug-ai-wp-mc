@@ -23,6 +23,21 @@ Jug.ai lets you create an AI-powered chatbot that learns from your website conte
 * Multiple bot support
 * Chatbot and AI Agent widget modes
 
+== External Services ==
+
+This plugin relies on the [Jug.ai](https://jug.ai) third-party service to provide its core functionality. The following data is transmitted to `https://app.jug.ai/api`:
+
+* **Authentication** – email or phone number for OTP-based login/signup.
+* **Website scraping** – your site URLs are sent so the service can crawl and index page content for chatbot training.
+* **Chat processing** – visitor chat messages are forwarded to the Jug.ai API and AI-generated responses are returned.
+* **Analytics** – conversation session metadata (timestamps, message counts) is stored on Jug.ai servers.
+
+No WordPress user accounts, passwords, or database contents are shared beyond what the site administrator explicitly configures.
+
+By using this plugin you agree to the Jug.ai terms:
+
+* [Jug.ai Privacy Policy](https://api.jug.ai/privacy-policy)
+
 == Installation ==
 
 1. Upload the `jug-ai` folder to `/wp-content/plugins/`

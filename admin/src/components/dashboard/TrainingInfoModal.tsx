@@ -278,7 +278,7 @@ export default function TrainingInfoModal({ open, onClose, trainingUuid, embeddi
 
       {showDeleteAllConfirm && (
         <div className="jug-ai-modal-overlay" style={{ zIndex: 100001 }} onClick={() => !deletingAll && setShowDeleteAllConfirm(false)}>
-          <div className="jug-ai-modal" style={{ width: '420px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="jug-ai-modal jug-ai-modal-sm" onClick={(e) => e.stopPropagation()}>
             <div className="jug-ai-modal-header">
               <h3>Delete All Embeddings</h3>
               <button type="button" className="jug-ai-modal-close" onClick={() => !deletingAll && setShowDeleteAllConfirm(false)}>&times;</button>
@@ -298,7 +298,7 @@ export default function TrainingInfoModal({ open, onClose, trainingUuid, embeddi
 
       {confirmDeleteId && (
         <div className="jug-ai-modal-overlay" style={{ zIndex: 100001 }} onClick={() => !deletingId && setConfirmDeleteId(null)}>
-          <div className="jug-ai-modal" style={{ width: '420px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="jug-ai-modal jug-ai-modal-sm" onClick={(e) => e.stopPropagation()}>
             <div className="jug-ai-modal-header">
               <h3>Delete Embedding</h3>
               <button type="button" className="jug-ai-modal-close" onClick={() => !deletingId && setConfirmDeleteId(null)}>&times;</button>

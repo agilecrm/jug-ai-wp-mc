@@ -1,4 +1,11 @@
 <?php
+/**
+ * Frontend chat widget injection via wp_footer.
+ *
+ * @package Jug_AI
+ * @license GPL-2.0-or-later
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

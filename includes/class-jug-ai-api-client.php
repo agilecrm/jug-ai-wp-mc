@@ -1,4 +1,11 @@
 <?php
+/**
+ * HTTP client for the Jug.ai external API.
+ *
+ * @package Jug_AI
+ * @license GPL-2.0-or-later
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -211,9 +218,12 @@ class Jug_AI_Api_Client {
 		$boundary = wp_generate_password( 24, false );
 		$headers['Content-Type'] = 'multipart/form-data; boundary=' . $boundary;
 
+		$safe_name = sanitize_file_name( $file_name );
+
 		$body  = '--' . $boundary . "\r\n";
-		$body .= 'Content-Disposition: form-data; name="file"; filename="' . $file_name . '"' . "\r\n";
+		$body .= 'Content-Disposition: form-data; name="file"; filename="' . $safe_name . '"' . "\r\n";
 		$body .= 'Content-Type: ' . $file_type . "\r\n\r\n";
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading validated temp upload file.
 		$body .= file_get_contents( $file_path ) . "\r\n";
 		$body .= '--' . $boundary . '--' . "\r\n";
 

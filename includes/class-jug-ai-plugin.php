@@ -1,4 +1,11 @@
 <?php
+/**
+ * Main plugin bootstrap (singleton).
+ *
+ * @package Jug_AI
+ * @license GPL-2.0-or-later
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

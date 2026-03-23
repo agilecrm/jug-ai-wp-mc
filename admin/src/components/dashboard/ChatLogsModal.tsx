@@ -275,7 +275,7 @@ export default function ChatLogsModal({ open, onClose, botUuid, botName }: Props
 
   return (
     <div className="jug-ai-modal-overlay" onClick={onClose}>
-      <div className="jug-ai-modal jug-ai-modal-xl" onClick={(e) => e.stopPropagation()}>
+      <div className="jug-ai-modal jug-ai-modal-chat-logs" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="jug-ai-modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

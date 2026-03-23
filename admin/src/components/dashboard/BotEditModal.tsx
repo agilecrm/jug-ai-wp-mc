@@ -222,7 +222,7 @@ export default function BotEditModal({ open, onClose, botUuid, widgetType, onSav
               </div>
             </div>
 
-            {error && <p className="jug-ai-error" style={{ padding: '0 28px' }}>{error}</p>}
+            {error && <p className="jug-ai-error" style={{ padding: '0 24px' }}>{error}</p>}
 
             <div className="jug-ai-modal-actions">
               <button
